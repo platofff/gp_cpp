@@ -43,10 +43,10 @@ def main():
     # Create collections
     collections = [load_and_modify_image(path, copies=256) for path in images]
     alphas = [[item[0] for item in coll] for coll in collections]
-    result = gp_genpattern(alphas, 512, 512, 64, 0, 0)
+    result = gp_genpattern(alphas, 512, 768, 64, 0, 0)
 
     # Create a blank canvas
-    canvas = Image.new("RGBA", (512, 512), (255, 255, 255, 255))
+    canvas = Image.new("RGBA", (512, 768), (255, 255, 255, 255))
 
     # For each set of coordinates, paste the corresponding image onto the canvas
     for coll_idx, coll in enumerate(result):

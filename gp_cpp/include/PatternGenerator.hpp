@@ -26,13 +26,13 @@ private:
   std::vector<Point> getPlacementPoints(const Point &p,
                                         const ptrdiff_t img_width,
                                         const ptrdiff_t img_height) const {
-    const std::array<Point, 4> points = {{p, {p.x - this->height, p.y}, {p.x, p.y - this->width},
-                 {p.x - this->height, p.y - this->width} }};
+    const std::array<Point, 4> points = {{p, {p.x - this->width, p.y}, {p.x, p.y - this->height},
+                 {p.x - this->width, p.y - this->height} }};
     std::vector<Point> result;
     result.reserve(4);
     
     for (const auto &point : points) {
-      Box img_box = {point, Point{point.x + img_height, point.y + img_width}};
+      Box img_box = {point, Point{point.x + img_width, point.y + img_height}};
       if (img_box.intersect(this->box).valid) {
         result.push_back(point);
       }
@@ -46,8 +46,8 @@ public:
                    const std::vector<std::vector<ImgAlpha>> &collections,
                    const size_t offset, const size_t collection_offset)
       : width(width), height(height),
-        box(Box{Point{0, 0}, Point{static_cast<ptrdiff_t>(height) - 1,
-                                   static_cast<ptrdiff_t>(width) - 1}}) {
+        box(Box{Point{0, 0}, Point{static_cast<ptrdiff_t>(width) - 1,
+                                   static_cast<ptrdiff_t>(height) - 1}}) {
     const size_t nCollections = collections.size();
 
     this->rCollections.reserve(nCollections);

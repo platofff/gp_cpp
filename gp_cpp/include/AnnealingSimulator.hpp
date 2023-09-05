@@ -27,8 +27,8 @@ public:
                                            const BitImage<T> &img) {
     double lambda = 0.005;
     double alpha = this->alpha;
-    std::uniform_int_distribution<int> distX(0, canvas.getHeight() - 1);
-    std::uniform_int_distribution<int> distY(0, canvas.getBitWidth() - 1);
+    std::uniform_int_distribution<int> distX(0, canvas.getBitWidth() - 1);
+    std::uniform_int_distribution<int> distY(0, canvas.getHeight() - 1);
 
     Point currentPoint(distX(this->random_gen),
                        distY(this->random_gen)); // Start with a random position
@@ -53,11 +53,11 @@ public:
       ptrdiff_t dy = r * std::sin(theta);
 
       const Point next_point{
-          (((currentPoint.x + dx) % canvas.getHeight()) +
-           canvas.getHeight()) %
-              canvas.getHeight(),
-          (((currentPoint.y + dy) % canvas.getBitWidth()) + canvas.getBitWidth()) %
-              canvas.getBitWidth()}; // Wrap coordinates
+          (((currentPoint.x + dx) % canvas.getBitWidth()) +
+           canvas.getBitWidth()) %
+              canvas.getBitWidth(),
+          (((currentPoint.y + dy) % canvas.getHeight()) + canvas.getHeight()) %
+              canvas.getHeight()}; // Wrap coordinates
 
       double next_cost = canvas.intersectionArea(img, next_point);
 

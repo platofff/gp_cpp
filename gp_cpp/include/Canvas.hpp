@@ -88,20 +88,23 @@ private:
       ptrdiff_t offset_x = img_offset_x + canvas_offset_x;
       ptrdiff_t img_start_x = image_area.min.x / BIT_SIZE;
 
-      while (offset_x < 0) { // TODO: it may can be optimized
+      if (canvas_start_x < 0) {
+        image_area.min.x -= canvas_start_x;
+        image_area.max.x -= canvas_start_x;
+        img_start_x -= canvas_start_x;
+        canvas_start_x = 0;
+      }
+
+      if (offset_x < 0) {
         offset_x += BIT_SIZE;
         img_start_x++;
       }
 
       const auto &view = img.getOffsettedView(offset_x);
 
-      if (canvas_start_x < 0) {
-        image_area.min.x -= canvas_start_x;
-        img_start_x -= canvas_start_x;
-        canvas_start_x = 0;
-      }
       if (canvas_start_point.y < 0) {
         image_area.min.y -= canvas_start_point.y;
+        image_area.max.y -= canvas_start_point.y;
         canvas_start_point.y = 0;
       }
 

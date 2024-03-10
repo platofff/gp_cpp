@@ -1,5 +1,7 @@
 .cache/*
 .vscode/*
+.vs/*
+out/*
 build/*
 python/__pycache__/*
 python/test.png

@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cstddef>
 #include <random>
+#include <numbers>
+#include <optional>
 
 #include "BitImage.hpp"
 #include "Canvas.hpp"
@@ -38,7 +39,8 @@ public:
         std::sqrt(canvas.getBitWidth() * canvas.getBitWidth() +
                   canvas.getHeight() * canvas.getHeight());
     double r_max = r_initial;
-    std::uniform_real_distribution<double> theta_dist(-M_PI, M_PI);
+    std::uniform_real_distribution<double> theta_dist(-std::numbers::pi_v<double>,
+                                                      std::numbers::pi_v<double>);
     std::uniform_real_distribution<double> dist(0.0, 1.0);
 
     uint64_t i = 0;

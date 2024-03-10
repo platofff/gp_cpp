@@ -7,117 +7,80 @@
 #include <cstddef>
 #include <optional>
 #include <stdexcept>
+#include <string>
 
 namespace gp {
-template <typename T> class Canvas : public BitImage<T, false> {
-private:
+struct PlacementArea {
+ public:
+  Box bounds;
+  Point canvasStart;
+  Point imageStart;
+};
+
+template <typename T>
+class Canvas : public BitImage<T, false> {
+ private:
   enum Area { BOTTOM, RIGHT, BOTTOM_RIGHT, CANVAS, AREAS_SIZE };
 
   const std::array<Box, AREAS_SIZE> areas;
-  const aligned_mdarray<T, 2> &data;
+  const aligned_mdarray<T, 2>& data;
 
-  size_t placementAreas(const BitImage<T> &img, const Point pos,
-                        std::vector<std::pair<Point, Box>> &out) const {
-    assert(out.size() >= 4);
+  std::vector<PlacementArea> placementAreas(const BitImage<T>& img,
+                                            const Point pos) const {
     assert(img.getHeight() <= this->getHeight() &&
            img.getBitWidth() <= this->getBitWidth());
 
-    size_t out_size = 0;
+    std::vector<PlacementArea> out;
+    out.reserve(4);
 
     Box bit_bounds = {pos,
                       {pos.x + img.getBitWidth(), pos.y + img.getHeight()}};
 
+    // TODO: move it...
+    std::array<Vector, 4> offsets = {{}};
+    offsets[CANVAS] = {0, 0};
+    offsets[BOTTOM] = {0, -this->getHeight()};
+    offsets[RIGHT] = {-this->getBitWidth(), 0};
+    offsets[BOTTOM_RIGHT] = {-this->getBitWidth(), -this->getHeight()};
+
     for (int i = BOTTOM; i != AREAS_SIZE; i++) {
-      Box intersection = bit_bounds.intersect(areas[i]);
+      Box intersection = bit_bounds.intersect(this->areas[i]);
       if (intersection.valid) {
-        const Box image_area = intersection.translate(Vector{-pos.x, -pos.y});
-        Point canvas_start_point;
-
-        switch (i) {
-        case CANVAS:
-          canvas_start_point = pos;
-          break;
-        case BOTTOM:
-          canvas_start_point = {pos.x, 0};
-          break;
-        case RIGHT:
-          canvas_start_point = {0, pos.y};
-          break;
-        case BOTTOM_RIGHT:
-          canvas_start_point = {0, 0};
-          break;
-        }
-
-        out[out_size++] = std::make_pair(canvas_start_point, image_area);
+        out.emplace_back(intersection.translate(offsets[i]),
+                         intersection.min.translate(offsets[i]),
+                         Point{intersection.min.x - bit_bounds.min.x,
+                               intersection.min.y - bit_bounds.min.y});
+        assert(out.size() < 4);
       }
     }
 
-    return out_size;
+    return out;
   }
 
-  inline void
-  processImageIntersection(const BitImage<T> &img, const Point pos,
-                           std::function<void(T &, const T &)> action) const {
-    std::vector<std::pair<Point, Box>> _areas(4);
-    auto n_areas = this->placementAreas(img, pos, _areas);
-    const auto areas = std::span(&_areas.front(), n_areas);
+  inline void processImageIntersection(
+      const BitImage<T>& img,
+      const Point pos,
+      std::function<void(T&, const T&)> action) const {
+    const auto areas = this->placementAreas(img, pos);
 
     // TODO: non-divisible by BIT_SIZE canvas width support
     if (this->getBitWidth() % BIT_SIZE != 0) {
-      throw std::runtime_error("Canvas width must be divisible by " + std::to_string(BIT_SIZE));
+      throw std::runtime_error("Canvas width must be divisible by " +
+                               std::to_string(BIT_SIZE));
     }
 
-    /*
-    for (int i = 0; i < n_areas; i++) {
+    for (const auto& pa : areas) {
+      const auto view_idx = pa.canvasStart.x % BIT_SIZE;
+      const auto& view = img.getOffsettedView(view_idx);
 
-      std::cout << "min x: " << areas[i].second.min.x
-                << " y: " << areas[i].second.min.y << std::endl;
-      std::cout << "max x: " << areas[i].second.max.x
-                << " y: " << areas[i].second.max.y << std::endl
-                << "x: " << areas[i].first.x << " y: " << areas[i].first.y
-                << std::endl
-                << std::endl;
-    }*/
+      const auto canvas_start_x = pa.canvasStart.x / BIT_SIZE;
+      const auto byte_width =
+          (pa.bounds.getWidth() + BIT_SIZE - 1) / BIT_SIZE;  // ceil
 
-    // TODO: fix ugly varialbles naming
-    for (auto [canvas_start_point, image_area] : areas) {
-      const ptrdiff_t img_offset_x = -(image_area.min.x % BIT_SIZE);
-      const ptrdiff_t canvas_offset_x = canvas_start_point.x % BIT_SIZE;
-      ptrdiff_t canvas_start_x = canvas_start_point.x / BIT_SIZE;
-
-      ptrdiff_t offset_x = img_offset_x + canvas_offset_x;
-      ptrdiff_t img_start_x = image_area.min.x / BIT_SIZE;
-
-      if (canvas_start_x < 0) {
-        image_area.min.x -= canvas_start_x;
-        image_area.max.x -= canvas_start_x;
-        img_start_x -= canvas_start_x;
-        canvas_start_x = 0;
-      }
-
-      if (offset_x < 0) {
-        offset_x += BIT_SIZE;
-        img_start_x++;
-      }
-
-      const auto &view = img.getOffsettedView(offset_x);
-
-      if (canvas_start_point.y < 0) {
-        image_area.min.y -= canvas_start_point.y;
-        image_area.max.y -= canvas_start_point.y;
-        canvas_start_point.y = 0;
-      }
-
-      assert(image_area.min.y >= 0);
-      assert(canvas_start_point.y >= 0);
-      assert(image_area.min.x >= 0);
-      assert(canvas_start_x >= 0);
-
-      for (ptrdiff_t i = image_area.min.y, ci = canvas_start_point.y;
-           i < image_area.max.y; i++, ci++) {
-        for (ptrdiff_t j = img_start_x, cj = canvas_start_x,
-                       bj = image_area.min.x - canvas_offset_x;
-             bj < image_area.max.x; j++, cj++, bj += BIT_SIZE) {
+      for (ptrdiff_t i = pa.imageStart.y, ci = pa.canvasStart.y;
+           i < pa.imageStart.y + pa.bounds.getHeight(); i++, ci++) {
+        for (ptrdiff_t j = pa.imageStart.x, cj = canvas_start_x;
+             j < pa.imageStart.x + byte_width; j++, cj++) {
           action(data[ci, cj], view[i, j]);
         }
       }
@@ -126,7 +89,7 @@ private:
 
   using nlp = std::numeric_limits<ptrdiff_t>;
 
-public:
+ public:
   Canvas(const ptrdiff_t width, const ptrdiff_t height)
       : BitImage<T, false>(ImgAlpha(nullptr, width, height)),
         data(BitImage<T, false>::data[0]),
@@ -135,27 +98,28 @@ public:
                {{width, height}, {nlp::max(), nlp::max()}},
                {{0, 0}, {width, height}}}} {}
 
-  Canvas(const Canvas &other) = delete;
-  Canvas &operator=(const Canvas &) = delete;
+  Canvas(const Canvas& other) = delete;
+  Canvas& operator=(const Canvas&) = delete;
 
-  Canvas(Canvas &&other)
-      : BitImage<T, false>(static_cast<BitImage<T, false> &&>(other)),
-        areas(std::move(other.areas)), data(other.data) {}
+  Canvas(Canvas&& other)
+      : BitImage<T, false>(static_cast<BitImage<T, false>&&>(other)),
+        areas(std::move(other.areas)),
+        data(other.data) {}
 
   ~Canvas() = default;
 
   using BitImage<T, false>::BIT_SIZE;
 
-  void addImage(const BitImage<T> &img, const Point pos) {
+  void addImage(const BitImage<T>& img, const Point pos) {
     this->processImageIntersection(
         img, pos,
-        [](T &canvasChunk, const T &imgChunk) { canvasChunk |= imgChunk; });
+        [](T& canvasChunk, const T& imgChunk) { canvasChunk |= imgChunk; });
   }
 
-  int intersectionArea(const BitImage<T> &img, const Point pos) const {
+  int intersectionArea(const BitImage<T>& img, const Point pos) const {
     int res = 0;
     this->processImageIntersection(img, pos,
-                                   [&res](T &canvasChunk, const T &imgChunk) {
+                                   [&res](T& canvasChunk, const T& imgChunk) {
                                      const T p = canvasChunk & imgChunk;
                                      res += std::popcount(p);
                                    });
@@ -163,4 +127,4 @@ public:
   }
 };
 
-} // namespace gp
+}  // namespace gp

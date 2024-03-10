@@ -31,14 +31,15 @@ const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
     result = pg.generate();
   } catch (std::exception &e) {
     const char *what = e.what();
+    const size_t buf_size = std::strlen(what) + 1;
     char *buf =
-        static_cast<char *>(std::calloc(std::strlen(what) + 1, sizeof(char)));
+        static_cast<char *>(std::calloc(buf_size, sizeof(char)));
     if (buf == nullptr) {
       std::cerr << "Failed to allocate memory for exception message"
                 << std::endl;
       std::abort();
     }
-    std::strcpy(buf, what);
+    std::memcpy(buf, what, buf_size);
     return buf;
   }
 

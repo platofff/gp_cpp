@@ -25,14 +25,16 @@ add_library(genpattern SHARED
     "include/genpattern.h"
 )
 
+set_property(TARGET genpattern PROPERTY CXX_STANDARD 23)
+
 option(BUILD_TESTS "Build the test executable" ON)
 if (BUILD_TESTS)
     add_executable(genpattern_test
         ${SOURCE_FILES}
         "tests/test.cpp"
     )
+    set_property(TARGET genpattern_test PROPERTY CXX_STANDARD 23)
     target_include_directories(genpattern_test PRIVATE "include")
 endif()
 
-set_property(TARGET genpattern PROPERTY CXX_STANDARD 23)
 target_include_directories(genpattern PRIVATE "include")

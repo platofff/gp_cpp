@@ -3,16 +3,7 @@
 #include <functional>
 #include <memory>
 #include <new>
-
-#if __cpp_lib_mdspan
 #include <mdspan>
-#else
-#include <experimental/mdspan>
-namespace std {
-using std::experimental::dextents;
-using std::experimental::mdspan;
-}  // namespace std
-#endif
 
 namespace gp {
 struct Point {

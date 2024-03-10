@@ -1,6 +1,7 @@
 #pragma once
 
 #include <random>
+#include <algorithm>
 
 #include "AnnealingSimulator.hpp"
 #include "BitImage.hpp"

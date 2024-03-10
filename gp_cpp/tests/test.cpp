@@ -6,10 +6,10 @@ using namespace gp;
 
 constexpr size_t W = 16;
 constexpr size_t H = 16;
-const uint8_t data[W * H] = {};
+uint8_t data[W * H] = {};
 
 int main() {
-  Canvas<int> canvas(64, 64);
+  Canvas<uint8_t> canvas(64, 64);
 
   for (size_t i = 4; i < 12; i++) {
     for (size_t j = 4; j < 12; j++) {
@@ -17,8 +17,8 @@ int main() {
     }
   }
 
-  BitImage<int> img(ImgAlpha{data, W, H});
-  Point pos = {2, 0};
+  BitImage<uint8_t> img(ImgAlpha{data, W, H});
+  Point pos = {3, 0};
 
   canvas.addImage(img, pos);
 

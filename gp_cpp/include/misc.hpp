@@ -38,16 +38,9 @@ struct Box {
                {this->max.x + vec.x, this->max.y + vec.y}};
   }
 
-  inline ptrdiff_t getWidth() const { return this->max.x - this->min.x + 1; }
+  inline ptrdiff_t getWidth() const { return this->max.x - this->min.x; }
 
-  inline ptrdiff_t getHeight() const { return this->max.y - this->min.y + 1; }
-
-  /*
-  void normalize() {
-    this->max.x -= this->min.x;
-    this->max.y -= this->min.y;
-    this->min = {0, 0};
-  }*/
+  inline ptrdiff_t getHeight() const { return this->max.y - this->min.y; }
 };
 
 #if __cpp_lib_hardware_interference_size
@@ -126,7 +119,12 @@ auto make_aligned_mdarray(Extents... extents) {
       std::array<size_t, sizeof...(Extents)>{extents...}};
 }
 
-}  // namespace gp
+template <typename T>
+T positive_modulo(const T i, const T n) {
+  return (i % n + n) % n;
+}
+
+} // namespace gp
 
 template <>
 struct std::hash<gp::Point> {

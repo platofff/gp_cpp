@@ -5,7 +5,7 @@
 
 extern "C" {
 // CFFI_BEGIN
-typedef unsigned long gp_uint;
+typedef uint8_t gp_uint;
 
 typedef struct GPPoint {
   ptrdiff_t x, y;

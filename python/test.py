@@ -4,7 +4,7 @@ import random
 
 from genpattern import GPImgAlpha, gp_genpattern
 
-def load_and_modify_image(filepath, copies=1, min_scale=2, max_scale=4, max_rotation=360):
+def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=2, max_rotation=360):
     """
     Load a PNG image, randomly upscale and rotate it, then extract its alpha values.
     Returns a tuple of (GPImgAlpha, PIL.Image) for each copy.
@@ -22,7 +22,9 @@ def load_and_modify_image(filepath, copies=1, min_scale=2, max_scale=4, max_rota
             rotation_angle = random.uniform(0, max_rotation)
             
             scaled_img = img.resize((int(img.width * scale_factor), int(img.height * scale_factor)), resample=Image.Resampling.NEAREST)
-            rotated_img = scaled_img.rotate(rotation_angle, expand=True, resample=Image.Resampling.BILINEAR)
+            #rotated_img = scaled_img.rotate(rotation_angle, expand=True, resample=Image.Resampling.BILINEAR)
+
+            rotated_img = scaled_img
 
             # Extract the alpha channel
             if rotated_img.mode == "RGBA":
@@ -37,16 +39,19 @@ def load_and_modify_image(filepath, copies=1, min_scale=2, max_scale=4, max_rota
     return result
 
 def main():
-    # Load 5 copies of image1.png and 3 copies of image2.png
     images = ["test/image1.png", "test/image2.png"]
 
+    WIDTH = 1024
+    HEIGHT = 1024
+    COPIES = 500
+
     # Create collections
-    collections = [load_and_modify_image(path, copies=4) for path in images]
+    collections = [load_and_modify_image(path, copies=COPIES) for path in images]
     alphas = [[item[0] for item in coll] for coll in collections]
-    result = gp_genpattern(alphas, 64, 64, 64, 0, 0)
+    result = gp_genpattern(alphas, WIDTH, HEIGHT, 64, 0, 0)
 
     # Create a blank canvas
-    canvas = Image.new("RGBA", (64, 64), (255, 255, 255, 255))
+    canvas = Image.new("RGBA", (WIDTH, HEIGHT), (255, 255, 255, 255))
 
     # For each set of coordinates, paste the corresponding image onto the canvas
     for coll_idx, coll in enumerate(result):

@@ -98,7 +98,7 @@ public:
     }
   }
 
-  int nPixels() {
+  int nPixels() const {
     int res = 0;
     for (auto i = 0; i < this->getHeight(); i++) {
       for (auto j = 0; j < this->getWidth(); j++) {

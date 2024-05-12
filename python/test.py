@@ -22,9 +22,7 @@ def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=2, max_rota
             rotation_angle = random.uniform(0, max_rotation)
             
             scaled_img = img.resize((int(img.width * scale_factor), int(img.height * scale_factor)), resample=Image.Resampling.NEAREST)
-            #rotated_img = scaled_img.rotate(rotation_angle, expand=True, resample=Image.Resampling.BILINEAR)
-
-            rotated_img = scaled_img
+            rotated_img = scaled_img.rotate(rotation_angle, expand=True, resample=Image.Resampling.BILINEAR)
 
             # Extract the alpha channel
             if rotated_img.mode == "RGBA":
@@ -43,7 +41,7 @@ def main():
 
     WIDTH = 1024
     HEIGHT = 1024
-    COPIES = 500
+    COPIES = 1000
 
     # Create collections
     collections = [load_and_modify_image(path, copies=COPIES) for path in images]

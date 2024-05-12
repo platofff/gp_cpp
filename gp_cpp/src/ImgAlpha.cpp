@@ -5,8 +5,6 @@
 #include <memory>
 #include <stack>
 
-#include <iostream>
-
 namespace gp {
 ImgAlpha::ImgAlpha(const uint8_t *data, const size_t width, const size_t height)
     : alpha(make_aligned_mdarray<uint8_t>(height, width)) {

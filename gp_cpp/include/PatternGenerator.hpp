@@ -10,15 +10,15 @@
 #include "OffsettedImgAlpha.hpp"
 
 namespace gp {
-template <typename T> class PatternGenerator {
+class PatternGenerator {
 private:
-  std::vector<std::vector<BitImage<T>>>
+  std::vector<std::vector<BitImage>>
       oCollections, // collections of images without offset
       rCollections, // collections of images with regular offset
       sCollections; // with increased offset
   std::vector<std::vector<std::pair<Vector, Vector>>>
       baseOffsets; // baseOffsets for images with regular and increased offsets
-  std::vector<Canvas<T>> cCanvases; // canvas versions for each collection
+  std::vector<Canvas> cCanvases; // canvas versions for each collection
 
   const ptrdiff_t width;
   const ptrdiff_t height;
@@ -62,7 +62,7 @@ public:
 
       const size_t nImages = collections[i].size();
 
-      std::vector<BitImage<T>> r_col, s_col, o_col;
+      std::vector<BitImage> r_col, s_col, o_col;
       std::vector<std::pair<Vector, Vector>> bo;
       r_col.reserve(nImages);
       s_col.reserve(nImages);
@@ -108,7 +108,7 @@ public:
     std::mt19937 g(rd()); // TODO
     std::shuffle(indices.begin(), indices.end(), g);
 
-    AnnealingSimulator<T> sim(0.99, 1000);
+    AnnealingSimulator sim(0.99, 1000);
 
     for (const auto &[collection_idx, img_idx] : indices) {
       const auto &img = oCollections[collection_idx][img_idx];
@@ -117,7 +117,7 @@ public:
         const auto &p = _p.value();
         const auto [bo, sbo] = this->baseOffsets[collection_idx][img_idx];
         result[collection_idx][img_idx] =
-            this->getPlacementPoints(p, img.getBitWidth(), img.getHeight());
+            this->getPlacementPoints(p, img.getWidth(), img.getHeight());
 
         Point r_pos{p.x + bo.x, p.y + bo.y};
         Point s_pos{p.x + sbo.x, p.y + sbo.y};

@@ -9,7 +9,7 @@
 #include "misc.hpp"
 
 namespace gp {
-template <typename T> class AnnealingSimulator {
+class AnnealingSimulator {
 private:
   const double alpha;
   const double temperature;
@@ -24,11 +24,11 @@ public:
 
   ~AnnealingSimulator() = default;
 
-  std::optional<Point> optimimizePlacement(const Canvas<T> &canvas,
-                                           const BitImage<T> &img) {
+  std::optional<Point> optimimizePlacement(const Canvas &canvas,
+                                           const BitImage &img) {
     double lambda = 0.005;
     double alpha = this->alpha;
-    std::uniform_int_distribution<int> distX(0, canvas.getBitWidth() - 1);
+    std::uniform_int_distribution<int> distX(0, canvas.getWidth() - 1);
     std::uniform_int_distribution<int> distY(0, canvas.getHeight() - 1);
 
     Point currentPoint(distX(this->random_gen),
@@ -36,7 +36,7 @@ public:
 
     double currentCost = canvas.intersectionArea(img, currentPoint);
     const double r_initial =
-        std::sqrt(canvas.getBitWidth() * canvas.getBitWidth() +
+        std::sqrt(canvas.getWidth() * canvas.getWidth() +
                   canvas.getHeight() * canvas.getHeight());
     double r_max = r_initial;
     std::uniform_real_distribution<double> theta_dist(-std::numbers::pi_v<double>,
@@ -55,9 +55,9 @@ public:
       ptrdiff_t dy = r * std::sin(theta);
 
       const Point next_point{
-          (((currentPoint.x + dx) % canvas.getBitWidth()) +
-           canvas.getBitWidth()) %
-              canvas.getBitWidth(),
+          (((currentPoint.x + dx) % canvas.getWidth()) +
+           canvas.getWidth()) %
+              canvas.getWidth(),
           (((currentPoint.y + dy) % canvas.getHeight()) + canvas.getHeight()) %
               canvas.getHeight()}; // Wrap coordinates
 

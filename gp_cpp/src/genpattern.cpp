@@ -23,7 +23,7 @@ const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
     }
   }
 
-  PatternGenerator<gp_uint> pg(canvas_width, canvas_height, collections_v,
+  PatternGenerator pg(canvas_width, canvas_height, collections_v,
                                offset_radius, collection_offset_radius);
 
   std::vector<std::vector<std::optional<std::vector<Point>>>> result;

@@ -90,15 +90,15 @@ public:
 
   ~PatternGenerator() = default;
 
-  std::vector<std::vector<std::optional<std::vector<Point>>>> generate() {
+  std::vector<std::vector<std::vector<Point>>> generate() {
     std::vector<std::pair<size_t, size_t>> indices;
 
     const size_t nCollections = this->rCollections.size();
-    std::vector<std::vector<std::optional<std::vector<Point>>>> result(
+    std::vector<std::vector<std::vector<Point>>> result(
         nCollections);
     for (size_t i = 0; i < nCollections; i++) {
       const size_t nImages = this->rCollections[i].size();
-      result[i] = std::vector<std::optional<std::vector<Point>>>(nImages);
+      result[i] = std::vector<std::vector<Point>>(nImages);
       for (size_t j = 0; j < nImages; j++) {
         indices.push_back(std::make_pair(i, j));
       }

@@ -3,5 +3,6 @@
 .vs/*
 out/*
 build/*
+embuild/*
 python/__pycache__/*
 python/test.png

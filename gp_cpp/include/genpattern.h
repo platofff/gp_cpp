@@ -5,8 +5,6 @@
 
 extern "C" {
 // CFFI_BEGIN
-typedef uint8_t gp_uint;
-
 typedef struct GPPoint {
   ptrdiff_t x, y;
 } GPPoint;
@@ -33,3 +31,16 @@ const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
                           const size_t collection_offset_radius);
 // CFFI_END
 }
+
+#include "ImgAlpha.hpp"
+#include "PatternGenerator.hpp"
+#include <vector>
+
+using namespace gp;
+
+std::shared_ptr<ImgAlpha> init_ImgAlpha(std::vector<uint8_t> &data, const size_t width,
+                        const size_t height, const uint8_t threshold);
+PatternGenerator *init_PatternGenerator(
+    const size_t width, const size_t height,
+    const std::vector<std::vector<std::shared_ptr<ImgAlpha>>> &collections,
+    const size_t offset, const size_t collection_offset);

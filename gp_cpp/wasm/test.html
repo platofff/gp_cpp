@@ -1,63 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pattern Generator</title>
 </head>
+
 <body>
     <h1>Pattern Generator</h1>
-    <input type="file" id="imageInput" multiple>
-    <button id="addImages">Add Images to Collection</button>
-    <button id="createCollection">Create New Collection</button>
-    <button id="generate">Generate Pattern</button>
-
+    <form id="patternForm">
+        <div>
+            <label for="canvasWidth">Canvas Width:</label>
+            <input type="number" id="canvasWidth" required value="500">
+        </div>
+        <div>
+            <label for="canvasHeight">Canvas Height:</label>
+            <input type="number" id="canvasHeight" required value="500">
+        </div>
+        <div>
+            <label for="threshold">Threshold:</label>
+            <input type="number" id="threshold" required value="50">
+        </div>
+        <div>
+            <label for="offsetRadius">Offset Radius:</label>
+            <input type="number" id="offsetRadius" required value="0">
+        </div>
+        <div>
+            <label for="collectionOffsetRadius">Collection Offset Radius:</label>
+            <input type="number" id="collectionOffsetRadius" required value="0">
+        </div>
+        <div>
+            <label for="copiesPerImage">Copies per Image:</label>
+            <input type="number" id="copiesPerImage" required value="200">
+        </div>
+        <div>
+            <label for="imageFiles">Image Files:</label>
+            <input type="file" id="imageFiles" multiple required>
+        </div>
+        <div>
+            <label for="noTransformations">No Transformations:</label>
+            <input type="checkbox" id="noTransformations" checked>
+        </div>
+        <button type="submit">Generate Pattern</button>
+    </form>
+    <canvas id="patternCanvas"></canvas>
     <script>
         const worker = new Worker('genpattern.js');
+        let globalImageElements = [];
 
-        // Handle messages from the worker
-        worker.onmessage = function(e) {
-            console.log('Offsets received:', e.data.offsets);
-        };
+        worker.onmessage = function (e) {
+            console.log('Pattern generated:', e.data);
+            alert('Pattern generated! Check the console for details.');
+            displayPatterns(e.data.result);
+        }
 
-        worker.onerror = function(e) {
-            console.error('Worker error:', e.message);
-        };
+        document.getElementById('patternForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
 
-        document.getElementById('addImages').addEventListener('click', () => {
-            const files = document.getElementById('imageInput').files;
-            if (!files.length) return;
+            // Fetch all form data
+            const canvasWidth = document.getElementById('canvasWidth').value;
+            const canvasHeight = document.getElementById('canvasHeight').value;
+            const threshold = document.getElementById('threshold').value;
+            const offsetRadius = document.getElementById('offsetRadius').value;
+            const collectionOffsetRadius = document.getElementById('collectionOffsetRadius').value;
+            const copiesPerImage = document.getElementById('copiesPerImage').value;
+            const imageFiles = document.getElementById('imageFiles').files;
+            const noTransformations = document.getElementById('noTransformations').checked; // Check if no transformations are selected
 
-            // Read and send each image as ImageData to the worker
-            Array.from(files).forEach(file => {
+            const collections = await processImages(imageFiles, Number(copiesPerImage), noTransformations);
+
+            worker.postMessage({
+                method: 'run',
+                params: [collections, Number(canvasWidth), Number(canvasHeight), Number(threshold), Number(offsetRadius), Number(collectionOffsetRadius)]
+            });
+        });
+
+        async function processImages(files, copies, noTransformations) {
+            let collections = [];
+            globalImageElements = []; // Reset to store all transformations
+
+            for (const file of files) {
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                await new Promise(resolve => img.onload = () => {
+                    URL.revokeObjectURL(img.src); // Clean up the object URL to release memory
+                    resolve();
+                });
+
+                let collection = [];
+                for (let i = 0; i < copies; i++) {
+                    // Convert to ImageData right here
+                    const imageData = noTransformations ? await getImageData(img) : await applyRandomTransformations(img);
+                    collection.push(imageData);
+                    globalImageElements.push(imageData); // Save all transformations or originals
+                }
+                collections.push(collection);
+            }
+            return collections;
+        }
+
+        async function getImageData(img) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            return ctx.getImageData(0, 0, canvas.width, canvas.height);
+        }
+
+        function displayPatterns(patterns) {
+            const canvas = document.getElementById('patternCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = Number(document.getElementById('canvasWidth').value);
+            canvas.height = Number(document.getElementById('canvasHeight').value);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let imageIndex = 0;
+            patterns.forEach(collection => {
+                collection.forEach(imageOffsets => {
+                    imageOffsets.forEach(offset => {
+                        if (imageIndex < globalImageElements.length) {
+                            const imageData = globalImageElements[imageIndex];
+                            ctx.putImageData(imageData, offset.x, offset.y);
+                            imageIndex++;
+                        } else {
+                            console.error("Image data missing for index:", imageIndex);
+                            return;
+                        }
+                    });
+                });
+            });
+        }
+
+        function applyRandomTransformations(img) {
+            const angle = Math.random() * 360; // Rotation angle in degrees
+            const scale = 0.5 + Math.random(); // Scale factor, from 0.5 to 1.5
+
+            // Create a canvas to apply transformations
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Calculate new dimensions based on scale and make sure the entire image fits
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
+
+            // Translate to center the image at new origin, rotate and scale
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(angle * Math.PI / 180);
+            ctx.scale(scale, scale);
+
+            // Draw the image centered
+            ctx.drawImage(img, -img.width / 2, -img.height / 2);
+
+            // Create another canvas to capture the transformed image with original dimensions
+            const outputCanvas = document.createElement('canvas');
+            outputCanvas.width = img.width;
+            outputCanvas.height = img.height;
+            const outputCtx = outputCanvas.getContext('2d');
+
+            // Draw the transformed image onto this canvas, centered
+            outputCtx.drawImage(canvas, (outputCanvas.width - canvas.width) / 2, (outputCanvas.height - canvas.height) / 2);
+
+            // Get the ImageData from the output canvas
+            const imageData = outputCtx.getImageData(0, 0, outputCanvas.width, outputCanvas.height);
+            return imageData;
+        }
+
+        function readFileAsImageData(file) {
+            return new Promise((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onload = function(event) {
+                reader.onload = function (event) {
                     const img = new Image();
-                    img.onload = function() {
+                    img.onload = function () {
                         const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
                         canvas.width = img.width;
                         canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0);
-                        const imageData = ctx.getImageData(0, 0, img.width, img.height);
-                        worker.postMessage({ method: 'addImage', params: [0, imageData] });
+                        resolve(ctx.getImageData(0, 0, canvas.width, canvas.height));
                     };
                     img.src = event.target.result;
                 };
+                reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
-        });
-
-        document.getElementById('createCollection').addEventListener('click', () => {
-            worker.postMessage({ method: 'createCollection', params: [] });
-        });
-
-        document.getElementById('generate').addEventListener('click', () => {
-            worker.postMessage({
-                method: 'run',
-                params: [800, 600, 50, 0, 0] // Значения canvasWidth, canvasHeight, threshold, offsetRadius, collectionOffsetRadius
-            });
-        });
+        }
     </script>
 </body>
+
 </html>

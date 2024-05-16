@@ -46,7 +46,7 @@ def main():
     # Create collections
     collections = [load_and_modify_image(path, copies=COPIES) for path in images]
     alphas = [[item[0] for item in coll] for coll in collections]
-    result = gp_genpattern(alphas, WIDTH, HEIGHT, 64, 0, 0)
+    result = gp_genpattern(alphas, WIDTH, HEIGHT, 64, 5, 5)
 
     # Create a blank canvas
     canvas = Image.new("RGBA", (WIDTH, HEIGHT), (255, 255, 255, 255))

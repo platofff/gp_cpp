@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 from PIL import Image
 import random
+import os
+
+os.chdir('/home/a/projects/gp_cpp/python')
 
 from genpattern import GPImgAlpha, gp_genpattern
+
+
 
 def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=2, max_rotation=360):
     """
@@ -41,7 +46,7 @@ def main():
 
     WIDTH = 1024
     HEIGHT = 1024
-    COPIES = 1000
+    COPIES = 1024
 
     # Create collections
     collections = [load_and_modify_image(path, copies=COPIES) for path in images]

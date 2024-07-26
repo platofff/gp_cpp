@@ -31,15 +31,18 @@ private:
     std::vector<PlacementArea> out;
     out.reserve(4);
 
-    Box bit_bounds = {pos, {pos.x + img.getWidth(), pos.y + img.getHeight()}};
+    Box bounds = {pos, {pos.x + img.getWidth() - 1, pos.y + img.getHeight() - 1}};
+    std::cout << bounds << std::endl;
 
     for (int i = BOTTOM; i != AREAS_SIZE; i++) {
-      Box intersection = bit_bounds.intersect(this->areas[i]);
+      Box intersection = bounds.intersect(this->areas[i]);
       if (intersection.valid) {
+        //std::cout << this->areas[i] << " " << intersection << std::endl;
         out.emplace_back(intersection.translate(this->offsets[i]),
                          intersection.min.translate(this->offsets[i]),
-                         Point{intersection.min.x - bit_bounds.min.x,
-                               intersection.min.y - bit_bounds.min.y});
+                         Point{intersection.min.x - bounds.min.x,
+                               intersection.min.y - bounds.min.y});
+        std::cout << out.back().imageStart << std::endl;
         assert(out.size() <= 4);
       }
     }
@@ -68,10 +71,10 @@ private:
 public:
   Canvas(const ptrdiff_t width, const ptrdiff_t height)
       : BitImage(ImgAlpha(nullptr, width, height)),
-        areas{{{{0, height}, {width, nlp::max()}},
-               {{width, 0}, {nlp::max(), height}},
+        areas{{{{0, height}, {width - 1, nlp::max()}},
+               {{width, 0}, {nlp::max(), height - 1}},
                {{width, height}, {nlp::max(), nlp::max()}},
-               {{0, 0}, {width, height}}}},
+               {{0, 0}, {width - 1, height - 1}}}},
         offsets{{{0, -height}, {-width, 0}, {-width, -height}, {0, 0}}} {}
 
   Canvas(const Canvas &) = delete;
@@ -98,6 +101,7 @@ public:
     const auto new_bits = this->nPixels();
     std::cout << pos.x << " " << pos.y << "; old_bits " << old_bits
               << " new_bits " << new_bits << " imb " << img_bits << std::endl;
+    this->debug();
     assert(new_bits == old_bits + img_bits);
 #endif
   }

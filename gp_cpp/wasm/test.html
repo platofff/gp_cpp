@@ -118,20 +118,14 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             let imageIndex = 0;
-            patterns.forEach(collection => {
-                collection.forEach(imageOffsets => {
-                    imageOffsets.forEach(offset => {
-                        if (imageIndex < globalImageElements.length) {
-                            const imageData = globalImageElements[imageIndex];
-                            ctx.putImageData(imageData, offset.x, offset.y);
-                            imageIndex++;
-                        } else {
-                            console.error("Image data missing for index:", imageIndex);
-                            return;
-                        }
-                    });
-                });
-            });
+            
+            for (let i = 0; i < patterns.length; i++) {
+                const col = patterns[i][0]
+                for (let j = 0; j < col.length; j++) {
+                    const imageData = globalImageElements[i * col.length + j];
+                    ctx.putImageData(imageData, offset.x, offset.y);
+                }
+            }
         }
 
         function applyRandomTransformations(img) {

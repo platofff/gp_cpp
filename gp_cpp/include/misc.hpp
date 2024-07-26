@@ -1,16 +1,21 @@
 #pragma once
 
 #include <functional>
+#include <mdspan>
 #include <memory>
 #include <new>
-#include <mdspan>
+#include <iostream>
 
 namespace gp {
 struct Point {
   ptrdiff_t x, y;
-  bool operator==(const Point& other) const;
-  inline Point translate(const Point& vec) const {
+  bool operator==(const Point &other) const;
+  inline Point translate(const Point &vec) const {
     return {this->x + vec.x, this->y + vec.y};
+  }
+
+  friend std::ostream& operator<< (std::ostream& stream, const Point& point) {
+    return stream << point.x << ";" << point.y; 
   }
 };
 
@@ -20,27 +25,31 @@ struct Box {
   Point min, max;
   bool valid = true;
 
-  Box intersect(const Box& other) const {
+  Box intersect(const Box &other) const {
     Box result = {{std::max(this->min.x, other.min.x),
                    std::max(this->min.y, other.min.y)},
                   {std::min(this->max.x, other.max.x),
                    std::min(this->max.y, other.max.y)}};
 
-    if (result.min.x >= result.max.x || result.min.y >= result.max.y) {
+    if (result.min.x > result.max.x || result.min.y > result.max.y) {
       result.valid = false;
     }
 
     return result;
   }
 
-  inline Box translate(const Vector& vec) const {
+  inline Box translate(const Vector &vec) const {
     return Box{{this->min.x + vec.x, this->min.y + vec.y},
                {this->max.x + vec.x, this->max.y + vec.y}};
   }
 
-  inline ptrdiff_t getWidth() const { return this->max.x - this->min.x; }
+  inline ptrdiff_t getWidth() const { return this->max.x - this->min.x + 1; }
 
-  inline ptrdiff_t getHeight() const { return this->max.y - this->min.y; }
+  inline ptrdiff_t getHeight() const { return this->max.y - this->min.y + 1; }
+
+  friend std::ostream& operator<< (std::ostream& stream, const Box& box) {
+    return stream << "Box{" << box.min << " " << box.max << "}"; 
+  }
 };
 
 #if __cpp_lib_hardware_interference_size
@@ -49,9 +58,8 @@ using std::hardware_destructive_interference_size;
 constexpr size_t hardware_destructive_interference_size = 64;
 #endif
 
-template <typename T, size_t alignment>
-struct AlignedArrayDeleter {
-  void operator()(T* p) const {
+template <typename T, size_t alignment> struct AlignedArrayDeleter {
+  void operator()(T *p) const {
     operator delete[](p, std::align_val_t(alignment));
   }
 };
@@ -62,17 +70,17 @@ using aligned_unique_array_ptr =
 
 template <typename T, size_t alignment = hardware_destructive_interference_size>
 aligned_unique_array_ptr<T, alignment> make_aligned_unique_array(size_t size) {
-  T* ptr = new (std::align_val_t(alignment)) T[size]{};
+  T *ptr = new (std::align_val_t(alignment)) T[size]{};
   return aligned_unique_array_ptr<T, alignment>(ptr);
 }
 
 template <typename T, size_t dim>
 class aligned_mdarray : public std::mdspan<T, std::dextents<size_t, dim>> {
- private:
+private:
   aligned_unique_array_ptr<T> buf{nullptr};
   size_t buf_size = 0;
 
-  void move_from(aligned_mdarray&& other) noexcept {
+  void move_from(aligned_mdarray &&other) noexcept {
     this->buf_size = other.buf_size;
     const auto extents = other.extents();
     this->buf = std::move(other.buf);
@@ -80,7 +88,7 @@ class aligned_mdarray : public std::mdspan<T, std::dextents<size_t, dim>> {
         {this->buf.get(), extents});
   }
 
- public:
+public:
   aligned_mdarray(std::array<size_t, dim> extents) {
     this->buf_size = 1;
     for (size_t e : extents) {
@@ -93,18 +101,18 @@ class aligned_mdarray : public std::mdspan<T, std::dextents<size_t, dim>> {
 
   aligned_mdarray() {}
 
-  aligned_mdarray(const aligned_mdarray&) = delete;
-  aligned_mdarray& operator=(const aligned_mdarray&) = delete;
+  aligned_mdarray(const aligned_mdarray &) = delete;
+  aligned_mdarray &operator=(const aligned_mdarray &) = delete;
 
   // Move constructor
-  aligned_mdarray(aligned_mdarray&& other) noexcept {
+  aligned_mdarray(aligned_mdarray &&other) noexcept {
     this->move_from(std::move(other));
   }
 
   // Move assignment operator
-  aligned_mdarray& operator=(aligned_mdarray&& other) noexcept {
+  aligned_mdarray &operator=(aligned_mdarray &&other) noexcept {
     if (this == &other) {
-      return *this;  // self-assignment check
+      return *this; // self-assignment check
     }
     this->move_from(std::move(other));
     return *this;
@@ -119,16 +127,14 @@ auto make_aligned_mdarray(Extents... extents) {
       std::array<size_t, sizeof...(Extents)>{extents...}};
 }
 
-template <typename T>
-T positive_modulo(const T i, const T n) {
+template <typename T> T positive_modulo(const T i, const T n) {
   return (i % n + n) % n;
 }
 
 } // namespace gp
 
-template <>
-struct std::hash<gp::Point> {
-  size_t operator()(const gp::Point& p) const {
+template <> struct std::hash<gp::Point> {
+  size_t operator()(const gp::Point &p) const {
     return hash<ptrdiff_t>()(p.x) ^ (hash<ptrdiff_t>()(p.y) << 1);
   }
 };

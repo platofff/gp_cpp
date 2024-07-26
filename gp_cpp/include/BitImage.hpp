@@ -1,7 +1,7 @@
 #pragma once
 
-//#include <cassert>
-//#include <iostream>
+#include <cassert>
+#include <iostream>
 
 #include "ImgAlpha.hpp"
 
@@ -29,7 +29,7 @@ public:
   inline ptrdiff_t getWidth() const { return this->data.extent(1); }
   inline ptrdiff_t getHeight() const { return this->data.extent(0); }
 
-  /*
+  
   template <std::size_t N> static void reverse(std::bitset<N> &b) {
     for (std::size_t i = 0; i < N / 2; ++i) {
       bool t = b[i];
@@ -39,19 +39,14 @@ public:
   }
 
   void debug() {
-    for (auto idx = 0; idx < N_VIEWS; idx++) {
-      std::cout << "Image view " << idx << ":" << std::endl;
-      const auto &view = this->getOffsettedView(idx);
-      for (auto i = 0; i < view.extent(0); i++) {
-        for (auto j = 0; j < view.extent(1); j++) {
-          auto bs = static_cast<std::bitset<BIT_SIZE>>(this->data[idx][i, j]);
-          reverse<BIT_SIZE>(bs);
-          std::cout << bs << " ";
+    
+      for (auto i = 0; i < this->getHeight(); i++) {
+        for (auto j = 0; j < this->getWidth(); j++) {
+          std::cout << this->data[i, j];
         }
         std::cout << std::endl;
       }
-    }
-  }*/
+  }
 
   int nPixels() const {
     int res = 0;

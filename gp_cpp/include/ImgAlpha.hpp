@@ -53,7 +53,7 @@ private:
 
 protected:
   aligned_mdarray<uint8_t, 2> alpha;
-  ImgAlpha();
+  ImgAlpha() = default;
 
 public:
   ImgAlpha(const uint8_t *data, const size_t width, const size_t height);
@@ -62,13 +62,13 @@ public:
   ImgAlpha(const ImgAlpha &other) = delete;
   ImgAlpha &operator=(const ImgAlpha &) = delete;
 
-  ~ImgAlpha();
+  ~ImgAlpha() = default;
 
-  uint8_t &operator[](size_t i, size_t j) const { return this->alpha[i, j]; }
-  size_t getWidth() const { return this->alpha.extent(1); }
-  size_t getHeight() const { return this->alpha.extent(0); }
+  uint8_t &operator[](const size_t i, const size_t j) const;
+  size_t getWidth() const;
+  size_t getHeight() const;
 
-  void generateAndFillContour(uint8_t threshold);
+  void generateAndFillContour(const uint8_t threshold);
   const std::vector<Point> &getContour() const;
 
   static constexpr uint8_t FILL_VALUE = 255;

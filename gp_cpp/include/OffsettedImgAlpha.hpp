@@ -20,9 +20,6 @@ protected:
 
 public:
   OffsettedImgAlpha(const ImgAlpha &img, const ptrdiff_t r);
-  ~OffsettedImgAlpha();
-  inline Vector getBaseOffset() const {
-    return this->baseOffset;
-  }
+  Vector getBaseOffset() const;
 };
 } // namespace gp

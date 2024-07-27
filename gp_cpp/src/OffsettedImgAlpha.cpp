@@ -2,9 +2,9 @@
 #include "ImgAlpha.hpp"
 #include "misc.hpp"
 
+#include <cassert>
 #include <limits>
 #include <unordered_set>
-#include <cassert>
 
 namespace gp {
 const aligned_mdarray<uint8_t, 2>
@@ -61,7 +61,6 @@ OffsettedImgAlpha::minkowskiSum(const std::vector<Point> &contour,
   return std::make_pair(bounds, points_to_fill);
 }
 
-
 void OffsettedImgAlpha::fill(const Box &bounds,
                              const std::unordered_set<Point> &points_to_fill,
                              const ImgAlpha &img) {
@@ -71,19 +70,22 @@ void OffsettedImgAlpha::fill(const Box &bounds,
   this->alpha = make_aligned_mdarray<uint8_t>(height, width);
 
   for (const auto &point : points_to_fill) {
-    this->alpha[point.getY() - baseOffset.getY(), point.getX() - baseOffset.getX()] = ImgAlpha::FILL_VALUE;
+    this->alpha[point.getY() - baseOffset.getY(),
+                point.getX() - baseOffset.getX()] = ImgAlpha::FILL_VALUE;
   }
 
   for (ptrdiff_t i = 0; i < img.getHeight(); i++) {
     for (ptrdiff_t j = 0; j < img.getWidth(); j++) {
       if (img[i, j] == ImgAlpha::FILL_VALUE) {
-        this->alpha[i - baseOffset.getY(), j - baseOffset.getX()] = ImgAlpha::FILL_VALUE;
+        this->alpha[i - baseOffset.getY(), j - baseOffset.getX()] =
+            ImgAlpha::FILL_VALUE;
       }
     }
   }
 }
 
-OffsettedImgAlpha::OffsettedImgAlpha(const ImgAlpha &img, const ptrdiff_t r) : baseOffset(0, 0) {
+OffsettedImgAlpha::OffsettedImgAlpha(const ImgAlpha &img, const ptrdiff_t r)
+    : baseOffset(0, 0) {
   const auto &contour = img.getContour();
   assert(!contour.empty());
 
@@ -95,5 +97,5 @@ OffsettedImgAlpha::OffsettedImgAlpha(const ImgAlpha &img, const ptrdiff_t r) : b
   this->fill(bounds, points_to_fill, img);
 }
 
-OffsettedImgAlpha::~OffsettedImgAlpha() = default;
+Vector OffsettedImgAlpha::getBaseOffset() const { return this->baseOffset; }
 } // namespace gp

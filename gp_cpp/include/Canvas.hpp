@@ -6,10 +6,10 @@
 #include <cassert>
 #include <cstddef>
 #include <iostream>
+#include <stdexcept>
 
 namespace gp {
 struct PlacementArea {
-public:
   Box bounds;
   Point canvasStart;
   Point imageStart;
@@ -25,24 +25,31 @@ private:
 
   std::vector<PlacementArea> placementAreas(const BitImage &img,
                                             const Point pos) const {
-    assert(img.getHeight() <= this->getHeight() &&
-           img.getWidth() <= this->getWidth()); // TODO: exception
+    if (img.getHeight() > this->getHeight() ||
+        img.getWidth() > this->getWidth()) {
+      throw std::invalid_argument("An image is larger than the canvas");
+    }
 
     std::vector<PlacementArea> out;
     out.reserve(4);
 
-    Box bounds = {pos, {pos.getX() + img.getWidth() - 1, pos.getY() + img.getHeight() - 1}};
-    //std::cout << bounds << std::endl;
+    const auto imgWidth = static_cast<ptrdiff_t>(img.getWidth());
+    const auto imgHeight = static_cast<ptrdiff_t>(img.getHeight());
+    Box bounds = {
+        pos,
+        {pos.getX() + imgWidth - 1, pos.getY() + imgHeight - 1}};
+    // std::cout << bounds << std::endl;
 
     for (int i = BOTTOM; i != AREAS_SIZE; i++) {
       Box intersection = bounds.intersect(this->areas[i]);
       if (intersection.isValid()) {
-        //std::cout << this->areas[i] << " " << intersection << std::endl;
-        out.emplace_back(intersection.translate(this->offsets[i]),
-                         intersection.getMin().translate(this->offsets[i]),
-                         Point{intersection.getMin().getX() - bounds.getMin().getX(),
-                               intersection.getMin().getY() - bounds.getMin().getY()});
-        //std::cout << out.back().imageStart << std::endl;
+        // std::cout << this->areas[i] << " " << intersection << std::endl;
+        out.emplace_back(
+            intersection.translate(this->offsets[i]),
+            intersection.getMin().translate(this->offsets[i]),
+            Point{intersection.getMin().getX() - bounds.getMin().getX(),
+                  intersection.getMin().getY() - bounds.getMin().getY()});
+        // std::cout << out.back().imageStart << std::endl;
         assert(out.size() <= 4);
       }
     }
@@ -60,7 +67,7 @@ private:
            i < pa.imageStart.getY() + pa.bounds.getHeight(); i++, ci++) {
         for (ptrdiff_t j = pa.imageStart.getX(), cj = pa.canvasStart.getX();
              j < pa.imageStart.getX() + pa.bounds.getWidth(); j++, cj++) {
-          action(this->data[ci, cj], img.data[i, j]);
+          action(this->data[ci, cj], img[i, j]);
         }
       }
     }
@@ -101,13 +108,12 @@ public:
     const auto new_bits = this->nPixels();
     std::cout << pos.getX() << " " << pos.getY() << "; old_bits " << old_bits
               << " new_bits " << new_bits << " imb " << img_bits << std::endl;
-    //this->debug();
     assert(new_bits == old_bits + img_bits);
 #endif
   }
 
-  int intersectionArea(const BitImage &img, const Point pos) const {
-    int res = 0;
+  uint64_t intersectionArea(const BitImage &img, const Point pos) const {
+    uint64_t res = 0;
     this->processImageIntersection(
         img, pos, [&res](auto &canvasChunk, const auto &imgChunk) {
           if (canvasChunk & imgChunk) {

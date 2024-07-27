@@ -16,6 +16,8 @@ set(SOURCE_FILES
     "src/misc.cpp"
     "src/OffsettedImgAlpha.cpp"
     "src/genpattern.cpp"
+    "src/AnnealingSimulation.cpp"
+    "src/BitImage.cpp"
 )
 
 set(HEADER_FILES
@@ -23,7 +25,7 @@ set(HEADER_FILES
     "include/BitImage.hpp"
     "include/misc.hpp"
     "include/OffsettedImgAlpha.hpp"
-    "include/AnnealingSimulator.hpp"
+    "include/AnnealingSimulation.hpp"
     "include/genpattern.h"
 )
 

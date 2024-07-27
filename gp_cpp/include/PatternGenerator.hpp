@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <random>
 
-#include "AnnealingSimulator.hpp"
+#include "AnnealingSimulation.hpp"
 #include "BitImage.hpp"
 #include "Canvas.hpp"
 #include "ImgAlpha.hpp"
@@ -92,8 +92,6 @@ public:
     }
   }
 
-  ~PatternGenerator() = default;
-
   std::vector<std::vector<std::vector<Point>>> generate() {
     std::vector<std::pair<size_t, size_t>> indices;
 
@@ -108,30 +106,30 @@ public:
     }
 
     std::random_device rd;
-    std::mt19937 g(rd()); // TODO
-    std::shuffle(indices.begin(), indices.end(), g);
+    std::mt19937 randomGen(rd());
+    std::shuffle(indices.begin(), indices.end(), randomGen);
 
-    AnnealingSimulator sim(0.99, 1000);
+    const double temperatureInitial = 0.99;
 
     for (const auto &[collection_idx, img_idx] : indices) {
       const auto &img = oCollections[collection_idx][img_idx];
-      const auto _p = sim.optimimizePlacement(cCanvases[collection_idx], img);
+      const auto _p = annealingSimulationOptimimizePlacement(cCanvases[collection_idx], img, temperatureInitial);
       if (_p.has_value()) {
-        const auto &p = _p.value();
+        const auto &p = *_p;
         const auto [bo, sbo] = this->baseOffsets[collection_idx][img_idx];
         result[collection_idx][img_idx] =
             this->getPlacementPoints(p, img.getWidth(), img.getHeight());
 
-        Point r_pos{p.getX() + bo.getX(), p.getY() + bo.getY()};
-        Point s_pos{p.getX() + sbo.getX(), p.getY() + sbo.getY()};
+        Point rPos{p.getX() + bo.getX(), p.getY() + bo.getY()};
+        Point sPos{p.getX() + sbo.getX(), p.getY() + sbo.getY()};
 
         for (size_t i = 0; i < nCollections; i++) {
           if (i != collection_idx) {
             this->cCanvases[i].addImage(
-                this->rCollections[collection_idx][img_idx], r_pos);
+                this->rCollections[collection_idx][img_idx], rPos);
           } else {
             this->cCanvases[i].addImage(
-                this->sCollections[collection_idx][img_idx], s_pos);
+                this->sCollections[collection_idx][img_idx], sPos);
           }
         }
       }

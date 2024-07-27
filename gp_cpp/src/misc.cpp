@@ -26,7 +26,7 @@ bool Box::isValid() const {
     this->valid = this->min.getX() <= this->max.getX() &&
                   this->min.getY() <= this->max.getY();
   }
-  return this->valid.value();
+  return *this->valid;
 }
 
 Box Box::intersect(const Box &other) const {

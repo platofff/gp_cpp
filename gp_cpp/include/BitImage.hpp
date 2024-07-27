@@ -1,56 +1,31 @@
 #pragma once
 
 #include <cassert>
+#include <cstddef>
 #include <iostream>
 
 #include "ImgAlpha.hpp"
 
 namespace gp {
 class BitImage {
-public:
-  BitImage(const ImgAlpha &img) {
-    size_t w = 0;
-    this->data = make_aligned_mdarray<bool>(img.getHeight(), img.getWidth());
+protected:
+  aligned_mdarray<bool, 2> data;
 
-    for (size_t row_idx = 0; row_idx < img.getHeight(); row_idx++) {
-      for (size_t col_idx = 0; col_idx < img.getWidth(); col_idx++) {
-        this->data[row_idx, col_idx] =
-            img[row_idx, col_idx] == ImgAlpha::FILL_VALUE;
-      }
-    }
-  }
+public:
+  BitImage(const ImgAlpha &img);
+  BitImage(BitImage &&other) noexcept;
 
   BitImage(const BitImage &) = delete;
   BitImage &operator=(const BitImage &) = delete;
 
-  BitImage(BitImage &&other) : data(std::move(other.data)) {}
+  size_t getWidth() const;
+  size_t getHeight() const;
 
-  ~BitImage() = default;
+  uint64_t nPixels() const;
 
-  inline ptrdiff_t getWidth() const { return this->data.extent(1); }
-  inline ptrdiff_t getHeight() const { return this->data.extent(0); }
-
-  void debug() {
-    for (auto i = 0; i < this->getHeight(); i++) {
-      for (auto j = 0; j < this->getWidth(); j++) {
-        std::cout << this->data[i, j];
-      }
-      std::cout << std::endl;
-    }
-  }
-
-  int nPixels() const {
-    int res = 0;
-    for (auto i = 0; i < this->getHeight(); i++) {
-      for (auto j = 0; j < this->getWidth(); j++) {
-        if (this->data[i, j]) {
-          res++;
-        }
-      }
-    }
-    return res;
-  }
-
-  aligned_mdarray<bool, 2> data;
+  const bool &operator[](const size_t i, const size_t j) const;
 };
+
+std::ostream &operator<<(std::ostream &stream, const BitImage &image);
+
 } // namespace gp

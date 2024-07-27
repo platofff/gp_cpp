@@ -13,11 +13,7 @@ ImgAlpha::ImgAlpha(const uint8_t *data, const size_t width, const size_t height)
   }
 }
 
-ImgAlpha::ImgAlpha(){};
-
-ImgAlpha::~ImgAlpha() = default;
-
-void ImgAlpha::generateAndFillContour(uint8_t threshold) {
+void ImgAlpha::generateAndFillContour(const uint8_t threshold) {
   const auto fill_buf =
       make_aligned_unique_array<PixelState>(this->alpha.size());
   const auto fill =
@@ -85,4 +81,8 @@ const std::vector<Point> &ImgAlpha::getContour() const { return this->contour; }
 ImgAlpha::ImgAlpha(ImgAlpha &&other) noexcept
     : alpha(std::move(other.alpha)), contour(std::move(other.contour)) {}
 
+uint8_t &ImgAlpha::operator[](const size_t i, const size_t j) const { return this->alpha[i, j]; }
+
+size_t ImgAlpha::getWidth() const { return this->alpha.extent(1); }
+size_t ImgAlpha::getHeight() const { return this->alpha.extent(0); }
 } // namespace gp

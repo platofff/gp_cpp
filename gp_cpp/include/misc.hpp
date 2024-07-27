@@ -1,56 +1,52 @@
 #pragma once
 
+#include <cstddef>
 #include <functional>
+#include <iostream>
 #include <mdspan>
 #include <memory>
 #include <new>
-#include <iostream>
 
 namespace gp {
-struct Point {
+class Point {
+private:
   ptrdiff_t x, y;
-  bool operator==(const Point &other) const;
-  inline Point translate(const Point &vec) const {
-    return {this->x + vec.x, this->y + vec.y};
-  }
 
-  friend std::ostream& operator<< (std::ostream& stream, const Point& point) {
-    return stream << point.x << ";" << point.y; 
-  }
+public:
+  Point(const ptrdiff_t x, const ptrdiff_t y);
+
+  bool operator==(const Point &other) const;
+  Point translate(const Point &vec) const;
+
+  ptrdiff_t getX() const;
+  ptrdiff_t getY() const;
 };
+
+std::ostream &operator<<(std::ostream &stream, const Point &point);
 
 using Vector = Point;
 
-struct Box {
+class Box {
+private:
   Point min, max;
-  bool valid = true;
+  mutable std::optional<bool> valid;
 
-  Box intersect(const Box &other) const {
-    Box result = {{std::max(this->min.x, other.min.x),
-                   std::max(this->min.y, other.min.y)},
-                  {std::min(this->max.x, other.max.x),
-                   std::min(this->max.y, other.max.y)}};
+public:
+  Box(const Point &min, const Point &max);
 
-    if (result.min.x > result.max.x || result.min.y > result.max.y) {
-      result.valid = false;
-    }
+  Box intersect(const Box &other) const;
+  Box translate(const Vector &vec) const;
 
-    return result;
-  }
+  ptrdiff_t getWidth() const;
+  ptrdiff_t getHeight() const;
 
-  inline Box translate(const Vector &vec) const {
-    return Box{{this->min.x + vec.x, this->min.y + vec.y},
-               {this->max.x + vec.x, this->max.y + vec.y}};
-  }
+  bool isValid() const;
 
-  inline ptrdiff_t getWidth() const { return this->max.x - this->min.x + 1; }
-
-  inline ptrdiff_t getHeight() const { return this->max.y - this->min.y + 1; }
-
-  friend std::ostream& operator<< (std::ostream& stream, const Box& box) {
-    return stream << "Box{" << box.min << " " << box.max << "}"; 
-  }
+  const Point &getMin() const;
+  const Point &getMax() const;
 };
+
+std::ostream &operator<<(std::ostream &stream, const Box &box);
 
 #if __cpp_lib_hardware_interference_size
 using std::hardware_destructive_interference_size;
@@ -78,7 +74,7 @@ template <typename T, size_t dim>
 class aligned_mdarray : public std::mdspan<T, std::dextents<size_t, dim>> {
 private:
   aligned_unique_array_ptr<T> buf{nullptr};
-  size_t buf_size = 0;
+  size_t buf_size;
 
   void move_from(aligned_mdarray &&other) noexcept {
     this->buf_size = other.buf_size;
@@ -118,7 +114,7 @@ public:
     return *this;
   }
 
-  inline size_t size() { return this->buf_size; }
+  size_t size() { return this->buf_size; }
 };
 
 template <typename T, typename... Extents>
@@ -135,6 +131,6 @@ template <typename T> T positive_modulo(const T i, const T n) {
 
 template <> struct std::hash<gp::Point> {
   size_t operator()(const gp::Point &p) const {
-    return hash<ptrdiff_t>()(p.x) ^ (hash<ptrdiff_t>()(p.y) << 1);
+    return hash<ptrdiff_t>()(p.getX()) ^ (hash<ptrdiff_t>()(p.getY()) << 1);
   }
 };

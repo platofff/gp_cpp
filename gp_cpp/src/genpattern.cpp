@@ -50,8 +50,7 @@ const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
       auto &img = collection.images[img_idx];
       img.offsets_size = r.size();
       for (uint8_t i = 0; i < img.offsets_size; i++) {
-        img.offsets[i].x = r[i].x;
-        img.offsets[i].y = r[i].y;
+        img.offsets[i] = {r[i].getX(), r[i].getY()};
       }
     }
   }

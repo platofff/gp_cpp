@@ -31,18 +31,18 @@ private:
     std::vector<PlacementArea> out;
     out.reserve(4);
 
-    Box bounds = {pos, {pos.x + img.getWidth() - 1, pos.y + img.getHeight() - 1}};
-    std::cout << bounds << std::endl;
+    Box bounds = {pos, {pos.getX() + img.getWidth() - 1, pos.getY() + img.getHeight() - 1}};
+    //std::cout << bounds << std::endl;
 
     for (int i = BOTTOM; i != AREAS_SIZE; i++) {
       Box intersection = bounds.intersect(this->areas[i]);
-      if (intersection.valid) {
+      if (intersection.isValid()) {
         //std::cout << this->areas[i] << " " << intersection << std::endl;
         out.emplace_back(intersection.translate(this->offsets[i]),
-                         intersection.min.translate(this->offsets[i]),
-                         Point{intersection.min.x - bounds.min.x,
-                               intersection.min.y - bounds.min.y});
-        std::cout << out.back().imageStart << std::endl;
+                         intersection.getMin().translate(this->offsets[i]),
+                         Point{intersection.getMin().getX() - bounds.getMin().getX(),
+                               intersection.getMin().getY() - bounds.getMin().getY()});
+        //std::cout << out.back().imageStart << std::endl;
         assert(out.size() <= 4);
       }
     }
@@ -56,10 +56,10 @@ private:
     const auto areas = this->placementAreas(img, pos);
 
     for (const auto &pa : areas) {
-      for (ptrdiff_t i = pa.imageStart.y, ci = pa.canvasStart.y;
-           i < pa.imageStart.y + pa.bounds.getHeight(); i++, ci++) {
-        for (ptrdiff_t j = pa.imageStart.x, cj = pa.canvasStart.x;
-             j < pa.imageStart.x + pa.bounds.getWidth(); j++, cj++) {
+      for (ptrdiff_t i = pa.imageStart.getY(), ci = pa.canvasStart.getY();
+           i < pa.imageStart.getY() + pa.bounds.getHeight(); i++, ci++) {
+        for (ptrdiff_t j = pa.imageStart.getX(), cj = pa.canvasStart.getX();
+             j < pa.imageStart.getX() + pa.bounds.getWidth(); j++, cj++) {
           action(this->data[ci, cj], img.data[i, j]);
         }
       }
@@ -99,9 +99,9 @@ public:
 
 #ifndef NDEBUG
     const auto new_bits = this->nPixels();
-    std::cout << pos.x << " " << pos.y << "; old_bits " << old_bits
+    std::cout << pos.getX() << " " << pos.getY() << "; old_bits " << old_bits
               << " new_bits " << new_bits << " imb " << img_bits << std::endl;
-    this->debug();
+    //this->debug();
     assert(new_bits == old_bits + img_bits);
 #endif
   }

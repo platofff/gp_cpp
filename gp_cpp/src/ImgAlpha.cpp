@@ -34,8 +34,8 @@ void ImgAlpha::generateAndFillContour(uint8_t threshold) {
     std::stack<Point> point_stack;
 
     const auto push_if_valid = [&point_stack, &fill, this](const Point &p) {
-      if (p.y >= 0 && p.y < this->getHeight() && p.x >= 0 &&
-          p.x < this->getWidth() && fill[p.y, p.x] == PixelState::NOT_CHECKED) {
+      if (p.getY() >= 0 && p.getY() < this->getHeight() && p.getX() >= 0 &&
+          p.getX() < this->getWidth() && fill[p.getY(), p.getX()] == PixelState::NOT_CHECKED) {
         point_stack.push(p);
       }
     };
@@ -43,7 +43,9 @@ void ImgAlpha::generateAndFillContour(uint8_t threshold) {
     push_if_valid(p);
 
     while (!point_stack.empty()) {
-      const auto [x, y] = point_stack.top();
+      const auto point = point_stack.top();
+      const auto x = point.getX();
+      const auto y = point.getY();
       point_stack.pop();
 
       if ((*this)[y, x] < threshold) {

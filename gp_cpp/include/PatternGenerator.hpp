@@ -1,7 +1,7 @@
 #pragma once
 
-#include <random>
 #include <algorithm>
+#include <random>
 
 #include "AnnealingSimulator.hpp"
 #include "BitImage.hpp"
@@ -27,14 +27,18 @@ private:
   std::vector<Point> getPlacementPoints(const Point &p,
                                         const ptrdiff_t img_width,
                                         const ptrdiff_t img_height) const {
-    const std::array<Point, 4> points = {{p, {p.x - this->width, p.y}, {p.x, p.y - this->height},
-                 {p.x - this->width, p.y - this->height} }};
+    const std::array<Point, 4> points = {
+        {p,
+         {p.getX() - this->width, p.getY()},
+         {p.getX(), p.getY() - this->height},
+         {p.getX() - this->width, p.getY() - this->height}}};
     std::vector<Point> result;
     result.reserve(4);
-    
+
     for (const auto &point : points) {
-      Box img_box = {point, Point{point.x + img_width, point.y + img_height}};
-      if (img_box.intersect(this->box).valid) {
+      Box img_box = {
+          point, Point{point.getX() + img_width, point.getY() + img_height}};
+      if (img_box.intersect(this->box).isValid()) {
         result.push_back(point);
       }
     }
@@ -94,8 +98,7 @@ public:
     std::vector<std::pair<size_t, size_t>> indices;
 
     const size_t nCollections = this->rCollections.size();
-    std::vector<std::vector<std::vector<Point>>> result(
-        nCollections);
+    std::vector<std::vector<std::vector<Point>>> result(nCollections);
     for (size_t i = 0; i < nCollections; i++) {
       const size_t nImages = this->rCollections[i].size();
       result[i] = std::vector<std::vector<Point>>(nImages);
@@ -119,8 +122,8 @@ public:
         result[collection_idx][img_idx] =
             this->getPlacementPoints(p, img.getWidth(), img.getHeight());
 
-        Point r_pos{p.x + bo.x, p.y + bo.y};
-        Point s_pos{p.x + sbo.x, p.y + sbo.y};
+        Point r_pos{p.getX() + bo.getX(), p.getY() + bo.getY()};
+        Point s_pos{p.getX() + sbo.getX(), p.getY() + sbo.getY()};
 
         for (size_t i = 0; i < nCollections; i++) {
           if (i != collection_idx) {

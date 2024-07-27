@@ -18,6 +18,8 @@ set(SOURCE_FILES
     "src/genpattern.cpp"
     "src/AnnealingSimulation.cpp"
     "src/BitImage.cpp"
+    "src/Canvas.cpp"
+    "src/PatternGenerator.cpp"
 )
 
 set(HEADER_FILES

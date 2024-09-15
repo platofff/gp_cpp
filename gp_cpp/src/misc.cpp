@@ -1,21 +1,7 @@
 #include "misc.hpp"
 
 namespace gp {
-Point::Point(const ptrdiff_t x, const ptrdiff_t y) : x(x), y(y) {}
-
-bool Point::operator==(const Point &other) const {
-  return this->getX() == other.getX() && this->getY() == other.getY();
-}
-
-Point Point::translate(const Vector &vec) const {
-  return {this->getX() + vec.getX(), this->getY() + vec.getY()};
-}
-
-ptrdiff_t Point::getX() const { return this->x; }
-
-ptrdiff_t Point::getY() const { return this->y; }
-
-std::ostream &operator<<(std::ostream &stream, const Point &point) {
+std::ostream &operator<<(std::ostream &stream, const TPoint<ptrdiff_t> &point) {
   return stream << point.getX() << ";" << point.getY();
 }
 

@@ -14,9 +14,9 @@ private:
   enum class PixelState { NOT_CHECKED = 0, FILLED, CONTOUR };
 
   template <typename Container>
-  void getFilteredPerimeter(
-      Container &container,
+  Container getFilteredPerimeter(
       std::function<bool(uint8_t)> predicate = [](uint8_t) { return true; }) {
+    Container container;
     ptrdiff_t i = 0, j = 0;
 
     // Top edge
@@ -49,6 +49,8 @@ private:
         container.emplace_back(j, i);
       }
     }
+
+    return container;
   }
 
 protected:

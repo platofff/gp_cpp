@@ -18,8 +18,8 @@ public:
   BitImage(const BitImage &) = delete;
   BitImage &operator=(const BitImage &) = delete;
 
-  size_t getWidth() const;
-  size_t getHeight() const;
+  ptrdiff_t getWidth() const;
+  ptrdiff_t getHeight() const;
 
   uint64_t nPixels() const;
 

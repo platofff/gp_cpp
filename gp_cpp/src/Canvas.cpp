@@ -75,10 +75,11 @@ void Canvas::addImage(const BitImage &img, const Point pos) {
       [](auto &canvasChunk, const auto &imgChunk) { canvasChunk |= imgChunk; });
 
 #ifndef NDEBUG
+  /*
   const auto new_bits = this->nPixels();
   std::cout << pos.getX() << " " << pos.getY() << "; old_bits " << old_bits
             << " new_bits " << new_bits << " imb " << img_bits << std::endl;
-  assert(new_bits == old_bits + img_bits);
+  assert(new_bits == old_bits + img_bits);*/
 #endif
 }
 

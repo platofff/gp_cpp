@@ -19,19 +19,16 @@ void ImgAlpha::generateAndFillContour(const uint8_t threshold) {
   const auto fill =
       std::mdspan(fill_buf.get(), this->getHeight(), this->getWidth());
 
-  bool no_start_points = true;
-
-  std::vector<Point> fill_start_points;
-  this->getFilteredPerimeter(
-      fill_start_points, [threshold](uint8_t val) { return val < threshold; });
+  auto fill_start_points = this->getFilteredPerimeter<std::vector<Point>>(
+      [threshold](uint8_t val) { return val < threshold; });
 
   for (const auto &p : fill_start_points) {
-    no_start_points = false;
     std::stack<Point> point_stack;
 
     const auto push_if_valid = [&point_stack, &fill, this](const Point &p) {
       if (p.getY() >= 0 && p.getY() < this->getHeight() && p.getX() >= 0 &&
-          p.getX() < this->getWidth() && fill[p.getY(), p.getX()] == PixelState::NOT_CHECKED) {
+          p.getX() < this->getWidth() &&
+          fill[p.getY(), p.getX()] == PixelState::NOT_CHECKED) {
         point_stack.push(p);
       }
     };
@@ -58,9 +55,10 @@ void ImgAlpha::generateAndFillContour(const uint8_t threshold) {
   }
 
   this->contour.clear();
-  if (no_start_points) {
-    this->getFilteredPerimeter(this->contour);
-    std::fill_n(this->alpha.data_handle(), this->alpha.size(), ImgAlpha::FILL_VALUE);
+  if (fill_start_points.empty()) {
+    this->contour = this->getFilteredPerimeter<std::vector<Point>>();
+    std::fill_n(this->alpha.data_handle(), this->alpha.size(),
+                ImgAlpha::FILL_VALUE);
     return;
   }
 
@@ -81,7 +79,9 @@ const std::vector<Point> &ImgAlpha::getContour() const { return this->contour; }
 ImgAlpha::ImgAlpha(ImgAlpha &&other) noexcept
     : alpha(std::move(other.alpha)), contour(std::move(other.contour)) {}
 
-uint8_t &ImgAlpha::operator[](const size_t i, const size_t j) const { return this->alpha[i, j]; }
+uint8_t &ImgAlpha::operator[](const size_t i, const size_t j) const {
+  return this->alpha[i, j];
+}
 
 size_t ImgAlpha::getWidth() const { return this->alpha.extent(1); }
 size_t ImgAlpha::getHeight() const { return this->alpha.extent(0); }

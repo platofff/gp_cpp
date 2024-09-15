@@ -1,6 +1,6 @@
 #include "PatternGenerator.hpp"
 #include "OffsettedImgAlpha.hpp"
-#include "AnnealingSimulation.hpp"
+#include "OptimizePlacement.hpp"
 
 #include <algorithm>
 #include <random>
@@ -94,7 +94,7 @@ PatternGenerator::PatternGenerator(const size_t width, const size_t height,
 
     for (const auto &[collection_idx, img_idx] : indices) {
       const auto &img = oCollections[collection_idx][img_idx];
-      const auto _p = annealingSimulationOptimimizePlacement(cCanvases[collection_idx], img, temperatureInitial);
+      const auto _p = optimizePlacement(cCanvases[collection_idx], img, temperatureInitial);
       if (_p.has_value()) {
         const auto &p = *_p;
         const auto [bo, sbo] = this->baseOffsets[collection_idx][img_idx];

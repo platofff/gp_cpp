@@ -1,13 +1,13 @@
 ﻿option(BUILD_TESTS "Build the test executable" ON)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /GL /clang:-Ofast /clang:-flto")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /O2 /GL /clang:-Ofast /clang:-flto")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /GL /clang:-O3 /clang:-ffp-contract=fast /clang:-flto")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /O2 /GL /clang:-O3 /clang:-ffp-contract=fast /clang:-flto")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /clang:-flto")
 else()
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -stdlib=libc++")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -stdlib=libc++")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Ofast")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffp-contract=fast -stdlib=libc++")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffp-contract=fast")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 endif()
 
@@ -16,7 +16,7 @@ set(SOURCE_FILES
     "src/misc.cpp"
     "src/OffsettedImgAlpha.cpp"
     "src/genpattern.cpp"
-    "src/AnnealingSimulation.cpp"
+    "src/OptimizePlacement.cpp"
     "src/BitImage.cpp"
     "src/Canvas.cpp"
     "src/PatternGenerator.cpp"
@@ -27,7 +27,7 @@ set(HEADER_FILES
     "include/BitImage.hpp"
     "include/misc.hpp"
     "include/OffsettedImgAlpha.hpp"
-    "include/AnnealingSimulation.hpp"
+    "include/OptimizePlacement.hpp"
     "include/genpattern.h"
 )
 
@@ -40,6 +40,7 @@ else()
 endif()
 
 set_property(TARGET genpattern PROPERTY CXX_STANDARD 23)
+target_include_directories(genpattern PRIVATE "include")
 
 if (BUILD_TESTS)
     add_executable(genpattern_test
@@ -49,6 +50,4 @@ if (BUILD_TESTS)
     set_property(TARGET genpattern_test PROPERTY CXX_STANDARD 23)
     target_include_directories(genpattern_test PRIVATE "include")
 endif()
-
-target_include_directories(genpattern PRIVATE "include")
 

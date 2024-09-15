@@ -8,23 +8,29 @@
 #include <new>
 
 namespace gp {
-class Point {
+template <typename T> class TPoint {
 private:
-  ptrdiff_t x, y;
+  T x, y;
 
 public:
-  Point(const ptrdiff_t x, const ptrdiff_t y);
+  TPoint(const T x, const T y) : x(x), y(y){};
 
-  bool operator==(const Point &other) const;
-  Point translate(const Point &vec) const;
+  bool operator==(const TPoint &other) const {
+    return this->getX() == other.getX() && this->getY() == other.getY();
+  };
+  TPoint translate(const TPoint &vec) const {
+    return {this->getX() + vec.getX(), this->getY() + vec.getY()};
+  };
 
-  ptrdiff_t getX() const;
-  ptrdiff_t getY() const;
+  T getX() const { return this->x; };
+  T getY() const { return this->y; };
 };
 
-std::ostream &operator<<(std::ostream &stream, const Point &point);
-
+std::ostream &operator<<(std::ostream &stream, const TPoint<ptrdiff_t> &point); // TODO
+using Point = TPoint<ptrdiff_t>;
 using Vector = Point;
+
+std::ostream &operator<<(std::ostream &stream, const Point &point);
 
 class Box {
 private:

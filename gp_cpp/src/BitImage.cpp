@@ -14,8 +14,8 @@ BitImage::BitImage(const ImgAlpha &img)
 
 BitImage::BitImage(BitImage &&other) noexcept : data(std::move(other.data)) {}
 
-size_t BitImage::getWidth() const { return this->data.extent(1); }
-size_t BitImage::getHeight() const { return this->data.extent(0); }
+ptrdiff_t BitImage::getWidth() const { return this->data.extent(1); }
+ptrdiff_t BitImage::getHeight() const { return this->data.extent(0); }
 
 uint64_t BitImage::nPixels() const {
   uint64_t res = 0;

@@ -9,7 +9,7 @@ from genpattern import GPImgAlpha, gp_genpattern
 
 
 
-def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=2, max_rotation=360):
+def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=3, max_rotation=360):
     """
     Load a PNG image, randomly upscale and rotate it, then extract its alpha values.
     Returns a tuple of (GPImgAlpha, PIL.Image) for each copy.

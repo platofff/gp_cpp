@@ -69,14 +69,15 @@ const std::vector<Point> &ImgAlphaFilledContour::getContour() const {
 }
 
 ImgAlphaFilledContour::ImgAlphaFilledContour(const uint8_t *data,
-                                         const size_t width,
-                                         const size_t height,
-                                         const uint8_t threshold)
+                                             const size_t width,
+                                             const size_t height,
+                                             const uint8_t threshold)
     : ImgAlpha(data, width, height) {
   this->generateAndFillContour(threshold);
 }
 
-ImgAlphaFilledContour::ImgAlphaFilledContour(ImgAlphaFilledContour &&other) noexcept
+ImgAlphaFilledContour::ImgAlphaFilledContour(
+    ImgAlphaFilledContour &&other) noexcept
     : ImgAlpha(static_cast<ImgAlpha &&>(other)),
       contour(std::move(other.contour)) {}
 } // namespace gp

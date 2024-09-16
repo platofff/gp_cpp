@@ -46,16 +46,56 @@ public:
   Canvas(const Canvas &) = delete;
   Canvas &operator=(const Canvas &) = delete;
 
-  std::optional<Point> optimizePlacement(
-      const BitImage &img, const double tInitial,
-      std::function<double(const double, const double, const ptrdiff_t)>
-          decreaseT =
-              [](const double tInitial, const double t,
-                 const ptrdiff_t iteration) {
-                const double alpha = 0.9;
-                return tInitial * std::pow(alpha, iteration);
-              },
-      const double eps = 0.0001) const;
+  template <typename CoolingSchedule>
+  std::optional<Point> optimizePlacement(const BitImage &img,
+                                         const double tInitial,
+                                         CoolingSchedule decreaseT,
+                                         const double eps = 0.0001) const {
+    std::uniform_real_distribution<double> probDist(0.0, 1.0);
+
+    double t = tInitial;
+    // random point on the canvas
+    Point currentPosition{std::uniform_int_distribution<ptrdiff_t>(
+                              0, this->getWidth() - 1)(this->rng),
+                          std::uniform_int_distribution<ptrdiff_t>(
+                              0, this->getHeight() - 1)(this->rng)};
+    ptrdiff_t currentResult = this->intersectionArea(img, currentPosition);
+    if (currentResult == 0) {
+      return currentPosition;
+    }
+
+    for (ptrdiff_t i = 0; t > eps; i++) {
+      t = decreaseT(tInitial, t, i);
+      const Vector deltaMax{
+          static_cast<ptrdiff_t>(this->deltaMaxInitial.getX() * (t / tInitial)),
+          static_cast<ptrdiff_t>(this->deltaMaxInitial.getY() *
+                                 (t / tInitial))};
+      std::uniform_int_distribution<ptrdiff_t> distX(-deltaMax.getX(),
+                                                     deltaMax.getX());
+      std::uniform_int_distribution<ptrdiff_t> distY(-deltaMax.getY(),
+                                                     deltaMax.getY());
+      const Vector delta{distX(this->rng), distY(this->rng)};
+
+      const Point newPosition =
+          this->wrapPosition(currentPosition.getX() + delta.getX(),
+                             currentPosition.getY() + delta.getY());
+      const ptrdiff_t newResult = this->intersectionArea(img, newPosition);
+
+      const ptrdiff_t deltaResult = currentResult - newResult;
+      if (deltaResult > 0 // new result is better
+          || std::exp(-(static_cast<double>(deltaResult) / t)) <
+                 probDist(this->rng) // accepting worse solution
+      ) {
+        currentPosition = newPosition;
+        currentResult = newResult;
+        if (currentResult == 0) {
+          return currentPosition;
+        }
+      }
+    }
+
+    return std::nullopt;
+  }
 
   void addImage(const BitImage &img, const Point pos);
 };

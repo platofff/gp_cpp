@@ -20,6 +20,7 @@ set(SOURCE_FILES
     "src/BitImage.cpp"
     "src/Canvas.cpp"
     "src/PatternGenerator.cpp"
+    "src/CoolingSchedules.cpp"
 )
 
 set(HEADER_FILES
@@ -31,6 +32,7 @@ set(HEADER_FILES
     "include/BitImage.hpp"
     "include/Canvas.hpp"
     "include/PatternGenerator.hpp"
+    "include/CoolingSchedules.hpp"
 )
 
 if (EMSCRIPTEN)

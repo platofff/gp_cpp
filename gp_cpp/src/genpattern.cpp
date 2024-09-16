@@ -1,4 +1,6 @@
 #include "genpattern.h"
+
+#include "CoolingSchedules.hpp"
 #include "ImgAlphaFilledContour.hpp"
 #include "PatternGenerator.hpp"
 #include <exception>
@@ -24,11 +26,11 @@ const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
   }
 
   PatternGenerator pg(canvas_width, canvas_height, collections_v, offset_radius,
-                      collection_offset_radius);
+                      collection_offset_radius, 100.0);
 
   std::vector<std::vector<std::vector<Point>>> result;
   try {
-    result = pg.generate();
+    result = pg.generate(0, ExponentialCooling(0.85));
   } catch (std::exception &e) {
     const char *what = e.what();
     const size_t buf_size = std::strlen(what) + 1;

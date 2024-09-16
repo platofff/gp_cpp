@@ -91,7 +91,7 @@ PatternGenerator::PatternGenerator(const size_t width, const size_t height,
     std::mt19937 randomGen(rd());
     std::shuffle(indices.begin(), indices.end(), randomGen);
 
-    const double temperatureInitial = 0.99;
+    const double temperatureInitial = 1.0;
 
     for (const auto &[collection_idx, img_idx] : indices) {
       const auto &img = oCollections[collection_idx][img_idx];

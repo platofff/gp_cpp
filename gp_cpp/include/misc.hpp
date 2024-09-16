@@ -24,9 +24,12 @@ public:
 
   T getX() const { return this->x; };
   T getY() const { return this->y; };
+
+  friend std::ostream& operator<<( std::ostream& stream, const TPoint& point ) {
+    return stream << point.getX() << ";" << point.getY();  
+  }
 };
 
-std::ostream &operator<<(std::ostream &stream, const TPoint<ptrdiff_t> &point); // TODO
 using Point = TPoint<ptrdiff_t>;
 using Vector = Point;
 

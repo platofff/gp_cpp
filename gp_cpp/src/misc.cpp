@@ -1,10 +1,6 @@
 #include "misc.hpp"
 
 namespace gp {
-std::ostream &operator<<(std::ostream &stream, const TPoint<ptrdiff_t> &point) {
-  return stream << point.getX() << ";" << point.getY();
-}
-
 Box::Box(const Point &min, const Point &max) : min(min), max(max) {}
 
 bool Box::isValid() const {

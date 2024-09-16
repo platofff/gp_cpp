@@ -6,15 +6,10 @@
 #include <random>
 
 namespace gp {
-
-double decreaseTemperature(const double t) {
-  const double gamma = 0.99; // TODO
-  return gamma * t;
-}
-
-std::optional<Point> optimizePlacement(const Canvas &canvas,
-                                       const BitImage &img,
-                                       const double tInitial) {
+std::optional<Point> optimizePlacement(
+    const Canvas &canvas, const BitImage &img, const double tInitial,
+    std::function<double(const double, const double, const ptrdiff_t)> decreaseT,
+    const double eps) {
   std::random_device dev;
   std::mt19937 rng(dev());
   std::uniform_real_distribution<double> probDist(0.0, 1.0);
@@ -27,7 +22,6 @@ std::optional<Point> optimizePlacement(const Canvas &canvas,
   };
 
   double t = tInitial;
-  double eps = 0.0001;
   // random point on the canvas
   Point currentPosition{
       std::uniform_int_distribution<ptrdiff_t>(0, canvas.getWidth() - 1)(dev),
@@ -42,7 +36,8 @@ std::optional<Point> optimizePlacement(const Canvas &canvas,
       std::ceil(static_cast<double>(canvas.getWidth()) / 2.0),
       std::ceil(static_cast<double>(canvas.getHeight()) / 2.0)};
 
-  for (; t > eps; t = decreaseTemperature(t)) {
+  for (ptrdiff_t i = 0; t > eps; i++) {
+    t = decreaseT(tInitial, t, i);
     const Vector deltaMax{
         static_cast<ptrdiff_t>(deltaMaxInitial.getX() * (t / tInitial)),
         static_cast<ptrdiff_t>(deltaMaxInitial.getY() * (t / tInitial))};

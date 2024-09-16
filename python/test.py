@@ -46,7 +46,7 @@ def main():
 
     WIDTH = 1024
     HEIGHT = 1024
-    COPIES = 256
+    COPIES = 1024
 
     # Create collections
     collections = [load_and_modify_image(path, copies=COPIES) for path in images]

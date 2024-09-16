@@ -8,51 +8,6 @@
 
 namespace gp {
 class ImgAlpha {
-private:
-  std::vector<Point> contour;
-
-  enum class PixelState { NOT_CHECKED = 0, FILLED, CONTOUR };
-
-  template <typename Container>
-  Container getFilteredPerimeter(
-      std::function<bool(uint8_t)> predicate = [](uint8_t) { return true; }) {
-    Container container;
-    ptrdiff_t i = 0, j = 0;
-
-    // Top edge
-    for (; i < this->getHeight(); i++) {
-      if (predicate((*this)[i, j])) {
-        container.emplace_back(j, i);
-      }
-    }
-    i--;
-
-    // Right edge
-    for (; j < this->getWidth(); j++) {
-      if (predicate((*this)[i, j])) {
-        container.emplace_back(j, i);
-      }
-    }
-    j--;
-
-    // Bottom edge
-    for (; i >= 0; i--) {
-      if (predicate((*this)[i, j])) {
-        container.emplace_back(j, i);
-      }
-    }
-    i++;
-
-    // Left edge
-    for (; j > 0; j--) {
-      if (predicate((*this)[i, j])) {
-        container.emplace_back(j, i);
-      }
-    }
-
-    return container;
-  }
-
 protected:
   aligned_mdarray<uint8_t, 2> alpha;
   ImgAlpha() = default;
@@ -69,9 +24,6 @@ public:
   uint8_t &operator[](const size_t i, const size_t j) const;
   size_t getWidth() const;
   size_t getHeight() const;
-
-  void generateAndFillContour(const uint8_t threshold);
-  const std::vector<Point> &getContour() const;
 
   static constexpr uint8_t FILL_VALUE = 255;
 };

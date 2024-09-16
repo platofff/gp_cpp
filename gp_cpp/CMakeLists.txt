@@ -13,6 +13,7 @@ endif()
 
 set(SOURCE_FILES
     "src/ImgAlpha.cpp"
+    "src/ImgAlphaFilledContour.cpp"
     "src/misc.cpp"
     "src/OffsettedImgAlpha.cpp"
     "src/genpattern.cpp"
@@ -24,6 +25,7 @@ set(SOURCE_FILES
 
 set(HEADER_FILES
     "include/ImgAlpha.hpp"
+    "include/ImgAlphaFilledContour.hpp"
     "include/BitImage.hpp"
     "include/misc.hpp"
     "include/OffsettedImgAlpha.hpp"

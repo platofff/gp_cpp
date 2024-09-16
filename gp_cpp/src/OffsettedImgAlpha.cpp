@@ -1,5 +1,6 @@
 #include "OffsettedImgAlpha.hpp"
 #include "ImgAlpha.hpp"
+#include "ImgAlphaFilledContour.hpp"
 #include "misc.hpp"
 
 #include <cassert>
@@ -84,7 +85,7 @@ void OffsettedImgAlpha::fill(const Box &bounds,
   }
 }
 
-OffsettedImgAlpha::OffsettedImgAlpha(const ImgAlpha &img, const ptrdiff_t r)
+OffsettedImgAlpha::OffsettedImgAlpha(const ImgAlphaFilledContour &img, const ptrdiff_t r)
     : baseOffset(0, 0) {
   const auto &contour = img.getContour();
   assert(!contour.empty());

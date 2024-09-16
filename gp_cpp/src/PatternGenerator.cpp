@@ -1,4 +1,5 @@
 #include "PatternGenerator.hpp"
+#include "ImgAlphaFilledContour.hpp"
 #include "OffsettedImgAlpha.hpp"
 #include "OptimizePlacement.hpp"
 
@@ -29,7 +30,7 @@ PatternGenerator::getPlacementPoints(const Point &p, const ptrdiff_t img_width,
 }
 
 PatternGenerator::PatternGenerator(const size_t width, const size_t height,
-                   const std::vector<std::vector<ImgAlpha>> &collections,
+                   const std::vector<std::vector<ImgAlphaFilledContour>> &collections,
                    const size_t offset, const size_t collection_offset)
       : width(width), height(height),
         box(Box{Point{0, 0}, Point{static_cast<ptrdiff_t>(width) - 1,

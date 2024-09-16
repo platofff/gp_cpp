@@ -1,5 +1,5 @@
 #include "genpattern.h"
-#include "ImgAlpha.hpp"
+#include "ImgAlphaFilledContour.hpp"
 #include "PatternGenerator.hpp"
 #include <exception>
 
@@ -11,15 +11,14 @@ const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
                           const size_t collection_offset_radius) {
   using namespace gp;
 
-  std::vector<std::vector<ImgAlpha>> collections_v(n_collections);
+  std::vector<std::vector<ImgAlphaFilledContour>> collections_v(n_collections);
 
   for (size_t i = 0; i < n_collections; i++) {
     auto &collection = collections_v[i];
     collection.reserve(collections[i].n_images);
     for (size_t img_idx = 0; img_idx < collections[i].n_images; img_idx++) {
       const auto &img = collections[i].images[img_idx];
-      collection.emplace_back(img.data, img.width, img.height);
-      collection.back().generateAndFillContour(threshold);
+      collection.emplace_back(img.data, img.width, img.height, threshold);
       // std::cout << collection.back().getContour().size() << std::endl;
     }
   }
@@ -62,15 +61,17 @@ const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
 
 using namespace gp;
 
-std::shared_ptr<ImgAlpha> init_ImgAlpha(std::vector<uint8_t> &data, const size_t width,
-                        const size_t height, const uint8_t threshold) {
-  auto obj = std::make_shared<ImgAlpha>(data.data(), width, height);
-  obj->generateAndFillContour(threshold);
+// TODO: rename symbol
+std::shared_ptr<ImgAlphaFilledContour> init_ImgAlpha(std::vector<uint8_t> &data,
+                                                   const size_t width,
+                                                   const size_t height,
+                                                   const uint8_t threshold) {
+  auto obj = std::make_shared<ImgAlphaFilledContour>(data.data(), width, height, threshold);
   return obj;
 }
 
-std::vector<std::vector<ImgAlpha>> convertToImgAlphaVec(
-    const std::vector<std::vector<std::shared_ptr<ImgAlpha>>> &src) {
+std::vector<std::vector<ImgAlphaFilledContour>> convertToImgAlphaVec(
+    const std::vector<std::vector<std::shared_ptr<ImgAlphaFilledContour>>> &src) {
   std::vector<std::vector<ImgAlpha>> dest;
   dest.reserve(src.size());
 
@@ -95,7 +96,8 @@ std::vector<std::vector<ImgAlpha>> convertToImgAlphaVec(
 
 PatternGenerator *init_PatternGenerator(
     const size_t width, const size_t height,
-    const std::vector<std::vector<std::shared_ptr<ImgAlpha>>> &collections,
+    const std::vector<std::vector<std::shared_ptr<ImgAlphaFilledContour>>>
+        &collections,
     const size_t offset, const size_t collection_offset) {
   return new PatternGenerator{width, height, convertToImgAlphaVec(collections),
                               offset, collection_offset};
@@ -108,12 +110,14 @@ using namespace emscripten;
 EMSCRIPTEN_BINDINGS(genpattern) {
   register_vector<uint8_t>("Uint8Vector");
 
-  class_<ImgAlpha>("ImgAlpha")
-    .smart_ptr_constructor("ImgAlpha", &init_ImgAlpha);
+  // TODO: rename symbol
+  class_<ImgAlphaFilledContour>("ImgAlpha")
+      .smart_ptr_constructor("ImgAlpha", &init_ImgAlpha);
 
-  register_vector<std::shared_ptr<ImgAlpha>>("Collection");
+  register_vector<std::shared_ptr<ImgAlphaFilledContour>>("Collection");
 
-  register_vector<std::vector<std::shared_ptr<ImgAlpha>>>("CollectionVector");
+  register_vector<std::vector<std::shared_ptr<ImgAlphaFilledContour>>>(
+      "CollectionVector");
 
   value_object<Point>("Point").field("x", &Point::x).field("y", &Point::y);
 

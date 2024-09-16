@@ -2,7 +2,7 @@
 
 #include "BitImage.hpp"
 #include "Canvas.hpp"
-#include "ImgAlpha.hpp"
+#include "ImgAlphaFilledContour.hpp"
 
 namespace gp {
 class PatternGenerator {
@@ -25,7 +25,7 @@ private:
 
 public:
   PatternGenerator(const size_t width, const size_t height,
-                   const std::vector<std::vector<ImgAlpha>> &collections,
+                   const std::vector<std::vector<ImgAlphaFilledContour>> &collections,
                    const size_t offset, const size_t collection_offset);
 
   std::vector<std::vector<std::vector<Point>>> generate();

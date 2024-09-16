@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ImgAlpha.hpp"
+#include "ImgAlphaFilledContour.hpp"
 #include "misc.hpp"
 #include <cstddef>
 #include <unordered_set>
@@ -19,7 +20,7 @@ protected:
   using ImgAlpha::alpha;
 
 public:
-  OffsettedImgAlpha(const ImgAlpha &img, const ptrdiff_t r);
+  OffsettedImgAlpha(const ImgAlphaFilledContour &img, const ptrdiff_t r);
   Vector getBaseOffset() const;
 };
 } // namespace gp

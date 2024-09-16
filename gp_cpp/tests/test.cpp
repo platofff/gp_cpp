@@ -1,4 +1,4 @@
-#include "ImgAlpha.hpp"
+#include "ImgAlphaFilledContour.hpp"
 #include "PatternGenerator.hpp"
 #include <cstddef>
 
@@ -34,11 +34,11 @@ int main() {
     }
   }*/
 
-  std::vector<std::vector<ImgAlpha>> collections;
+  std::vector<std::vector<ImgAlphaFilledContour>> collections;
   collections.emplace_back();
-  collections[0].emplace_back(data, W, H).generateAndFillContour(64);
-  collections[0].emplace_back(data, W, H).generateAndFillContour(64);
-  collections[0].emplace_back(data, W, H).generateAndFillContour(64);
+  collections[0].emplace_back(data, W, H, 64);
+  collections[0].emplace_back(data, W, H, 64);
+  collections[0].emplace_back(data, W, H, 64);
 
   PatternGenerator generator(128, 128, collections, 0, 0);
   auto result = generator.generate();

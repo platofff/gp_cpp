@@ -3,6 +3,7 @@
 #include "BitImage.hpp"
 #include "Canvas.hpp"
 #include "ImgAlphaFilledContour.hpp"
+#include <random>
 
 namespace gp {
 class PatternGenerator {
@@ -18,6 +19,8 @@ private:
   const ptrdiff_t width;
   const ptrdiff_t height;
   const Box box;
+  std::random_device randomDev;
+  std::mt19937 rng;
 
   std::vector<Point> getPlacementPoints(const Point &p,
                                         const ptrdiff_t img_width,

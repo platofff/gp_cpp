@@ -1,6 +1,7 @@
 #include "Canvas.hpp"
 
 #include <iostream>
+#include <random>
 #include <stdexcept>
 
 namespace gp {
@@ -52,17 +53,22 @@ void Canvas::processImageIntersection(
   }
 }
 
-Canvas::Canvas(const ptrdiff_t width, const ptrdiff_t height)
+Canvas::Canvas(const ptrdiff_t width, const ptrdiff_t height, std::mt19937 &rng)
     : BitImage(ImgAlpha(nullptr, width, height)),
       areas{{{{0, height}, {width - 1, nlp::max()}},
              {{width, 0}, {nlp::max(), height - 1}},
              {{width, height}, {nlp::max(), nlp::max()}},
              {{0, 0}, {width - 1, height - 1}}}},
-      offsets{{{0, -height}, {-width, 0}, {-width, -height}, {0, 0}}} {}
+      offsets{{{0, -height}, {-width, 0}, {-width, -height}, {0, 0}}},
+      deltaMaxInitial{std::ceil(static_cast<double>(width) / 2.0),
+                      std::ceil(static_cast<double>(height) / 2.0)},
+      rng{rng} {}
 
 Canvas::Canvas(Canvas &&other)
     : BitImage(static_cast<BitImage &&>(other)), areas(std::move(other.areas)),
-      offsets(std::move(other.offsets)) {}
+      offsets(std::move(other.offsets)),
+      deltaMaxInitial(std::move(other.deltaMaxInitial)),
+      rng(other.rng) {}
 
 void Canvas::addImage(const BitImage &img, const Point pos) {
 #ifndef NDEBUG
@@ -92,5 +98,61 @@ uint64_t Canvas::intersectionArea(const BitImage &img, const Point pos) const {
         }
       });
   return res;
+}
+
+Point Canvas::wrapPosition(const ptrdiff_t x, const ptrdiff_t y) const {
+  return Point{((x % this->getWidth()) + this->getWidth()) % this->getWidth(),
+               ((y % this->getHeight()) + this->getHeight()) %
+                   this->getHeight()};
+};
+
+std::optional<Point> Canvas::optimizePlacement(
+    const BitImage &img, const double tInitial,
+    std::function<double(const double, const double, const ptrdiff_t)>
+        decreaseT,
+    const double eps) const {
+
+  std::uniform_real_distribution<double> probDist(0.0, 1.0);
+
+  double t = tInitial;
+  // random point on the canvas
+  Point currentPosition{
+      std::uniform_int_distribution<ptrdiff_t>(0, this->getWidth() - 1)(this->rng),
+      std::uniform_int_distribution<ptrdiff_t>(0, this->getHeight() - 1)(this->rng)};
+  ptrdiff_t currentResult = this->intersectionArea(img, currentPosition);
+  if (currentResult == 0) {
+    return currentPosition;
+  }
+
+  for (ptrdiff_t i = 0; t > eps; i++) {
+    t = decreaseT(tInitial, t, i);
+    const Vector deltaMax{
+        static_cast<ptrdiff_t>(this->deltaMaxInitial.getX() * (t / tInitial)),
+        static_cast<ptrdiff_t>(this->deltaMaxInitial.getY() * (t / tInitial))};
+    std::uniform_int_distribution<ptrdiff_t> distX(-deltaMax.getX(),
+                                                   deltaMax.getX());
+    std::uniform_int_distribution<ptrdiff_t> distY(-deltaMax.getY(),
+                                                   deltaMax.getY());
+    const Vector delta{distX(this->rng), distY(this->rng)};
+
+    const Point newPosition =
+        this->wrapPosition(currentPosition.getX() + delta.getX(),
+                           currentPosition.getY() + delta.getY());
+    const ptrdiff_t newResult = this->intersectionArea(img, newPosition);
+
+    const ptrdiff_t deltaResult = currentResult - newResult;
+    if (deltaResult > 0 // new result is better
+        || std::exp(-(static_cast<double>(deltaResult) / t)) <
+               probDist(this->rng) // accepting worse solution
+    ) {
+      currentPosition = newPosition;
+      currentResult = newResult;
+      if (currentResult == 0) {
+        return currentPosition;
+      }
+    }
+  }
+
+  return std::nullopt;
 }
 } // namespace gp

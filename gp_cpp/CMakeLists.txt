@@ -17,7 +17,6 @@ set(SOURCE_FILES
     "src/misc.cpp"
     "src/OffsettedImgAlpha.cpp"
     "src/genpattern.cpp"
-    "src/OptimizePlacement.cpp"
     "src/BitImage.cpp"
     "src/Canvas.cpp"
     "src/PatternGenerator.cpp"
@@ -26,11 +25,12 @@ set(SOURCE_FILES
 set(HEADER_FILES
     "include/ImgAlpha.hpp"
     "include/ImgAlphaFilledContour.hpp"
-    "include/BitImage.hpp"
     "include/misc.hpp"
     "include/OffsettedImgAlpha.hpp"
-    "include/OptimizePlacement.hpp"
     "include/genpattern.h"
+    "include/BitImage.hpp"
+    "include/Canvas.hpp"
+    "include/PatternGenerator.hpp"
 )
 
 if (EMSCRIPTEN)

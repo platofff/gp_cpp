@@ -25,10 +25,30 @@ typedef struct GPCollection {
   GPImgAlpha *images;
 } GPCollection;
 
+typedef enum GPScheduleType { GP_EXPONENTIAL, GP_LINEAR } GPScheduleType;
+
+typedef struct GPExponentialScheduleParams {
+  double alpha;
+} GPExponentialScheduleParams;
+
+typedef struct GPLinearScheduleParams {
+  double k;
+} GPLinearScheduleParams;
+
+typedef struct GPSchedule {
+  GPScheduleType type;
+
+  union {
+    GPExponentialScheduleParams exponential;
+    GPLinearScheduleParams linear;
+  } params;
+} GPSchedule;
+
 const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
                           const size_t canvas_width, const size_t canvas_height,
                           const uint8_t threshold, const size_t offset_radius,
-                          const size_t collection_offset_radius);
+                          const size_t collection_offset_radius,
+                          const GPSchedule *const schedule, const uint32_t seed);
 // CFFI_END
 }
 
@@ -38,8 +58,9 @@ const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
 
 using namespace gp;
 
-std::shared_ptr<ImgAlpha> init_ImgAlpha(std::vector<uint8_t> &data, const size_t width,
-                        const size_t height, const uint8_t threshold);
+std::shared_ptr<ImgAlpha> init_ImgAlpha(std::vector<uint8_t> &data,
+                                        const size_t width, const size_t height,
+                                        const uint8_t threshold);
 PatternGenerator *init_PatternGenerator(
     const size_t width, const size_t height,
     const std::vector<std::vector<std::shared_ptr<ImgAlpha>>> &collections,

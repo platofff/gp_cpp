@@ -5,7 +5,7 @@ import os
 
 os.chdir('/home/a/projects/gp_cpp/python')
 
-from genpattern import GPImgAlpha, gp_genpattern
+from genpattern import GPImgAlpha, gp_genpattern, GPExponentialSchedule, GPLinearSchedule
 
 
 
@@ -42,7 +42,9 @@ def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=3, max_rota
     return result
 
 def main():
-    random.seed(0)
+    SEED = 56
+
+    random.seed(SEED)
     images = ["test/image1.png", "test/image2.png"]
 
     WIDTH = 1024
@@ -52,7 +54,7 @@ def main():
     # Create collections
     collections = [load_and_modify_image(path, copies=COPIES) for path in images]
     alphas = [[item[0] for item in coll] for coll in collections]
-    result = gp_genpattern(alphas, WIDTH, HEIGHT, 64, 5, 2)
+    result = gp_genpattern(alphas, WIDTH, HEIGHT, 64, 5, 2, GPExponentialSchedule(0.95), SEED)
 
     # Create a blank canvas
     canvas = Image.new("RGBA", (WIDTH, HEIGHT), (255, 255, 255, 255))

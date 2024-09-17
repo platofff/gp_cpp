@@ -10,7 +10,9 @@ extern "C" {
 const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
                           const size_t canvas_width, const size_t canvas_height,
                           const uint8_t threshold, const size_t offset_radius,
-                          const size_t collection_offset_radius) {
+                          const size_t collection_offset_radius,
+                          const GPSchedule *const schedule,
+                          const uint32_t seed) {
   using namespace gp;
 
   std::vector<std::vector<ImgAlphaFilledContour>> collections_v(n_collections);
@@ -30,7 +32,15 @@ const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
 
   std::vector<std::vector<std::vector<Point>>> result;
   try {
-    result = pg.generate(0, ExponentialCooling(0.85));
+    switch (schedule->type) {
+    case GP_EXPONENTIAL:
+      result = pg.generate(
+          seed, ExponentialSchedule(schedule->params.exponential.alpha));
+      break;
+    case GP_LINEAR:
+      result = pg.generate(seed, LinearSchedule(schedule->params.linear.k));
+      break;
+    }
   } catch (std::exception &e) {
     const char *what = e.what();
     const size_t buf_size = std::strlen(what) + 1;
@@ -65,15 +75,17 @@ using namespace gp;
 
 // TODO: rename symbol
 std::shared_ptr<ImgAlphaFilledContour> init_ImgAlpha(std::vector<uint8_t> &data,
-                                                   const size_t width,
-                                                   const size_t height,
-                                                   const uint8_t threshold) {
-  auto obj = std::make_shared<ImgAlphaFilledContour>(data.data(), width, height, threshold);
+                                                     const size_t width,
+                                                     const size_t height,
+                                                     const uint8_t threshold) {
+  auto obj = std::make_shared<ImgAlphaFilledContour>(data.data(), width, height,
+                                                     threshold);
   return obj;
 }
 
 std::vector<std::vector<ImgAlphaFilledContour>> convertToImgAlphaVec(
-    const std::vector<std::vector<std::shared_ptr<ImgAlphaFilledContour>>> &src) {
+    const std::vector<std::vector<std::shared_ptr<ImgAlphaFilledContour>>>
+        &src) {
   std::vector<std::vector<ImgAlpha>> dest;
   dest.reserve(src.size());
 

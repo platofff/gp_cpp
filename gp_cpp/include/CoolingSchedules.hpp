@@ -4,14 +4,16 @@
 
 namespace gp {
 
-struct ExponentialCooling {
+struct ExponentialSchedule {
   const double alpha;
-  double operator()(const double tInitial, const double t, const ptrdiff_t iteration);
+  double operator()(const double tInitial, const double t,
+                    const ptrdiff_t iteration);
 };
 
-struct LinearCooling {
+struct LinearSchedule {
   const double k;
-  double operator()(const double tInitial, const double t, const ptrdiff_t iteration);
+  double operator()(const double tInitial, const double t,
+                    const ptrdiff_t iteration);
 };
 
 } // namespace gp

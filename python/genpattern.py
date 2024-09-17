@@ -20,6 +20,17 @@ class GPImgAlpha:
         self.width = width
         self.height = height
 
+class GPSchedule:
+    pass
+
+class GPExponentialSchedule:
+    def __init__(self, alpha):
+        self.alpha = alpha
+
+class GPLinearSchedule:
+    def __init__(self, k):
+        self.k = k
+
 class GPError(BaseException): pass
 
 def extract_offsets(c_collections, size):
@@ -51,7 +62,7 @@ def free_collections(c_collections, size):
         libc.free(collection.images)
     libc.free(c_collections)
 
-def gp_genpattern(collections, canvas_width, canvas_height, threshold, offset_radius, collection_offset_radius):
+def gp_genpattern(collections, canvas_width, canvas_height, threshold, offset_radius, collection_offset_radius, schedule, seed):
     c_collections = ffi.cast('GPCollection*', libc.calloc(len(collections), ffi.sizeof('GPCollection')))
 
     for i, coll in enumerate(collections):
@@ -67,6 +78,16 @@ def gp_genpattern(collections, canvas_width, canvas_height, threshold, offset_ra
             c_img.data = ffi.cast('uint8_t*', libc.calloc(len(img.data), 1))
             libc.memcpy(c_img.data, buf, len(img.data))
 
+    c_schedule = ffi.cast('GPSchedule*', libc.calloc(1, ffi.sizeof('GPSchedule')))
+    if type(schedule) is GPExponentialSchedule:
+        c_schedule.type = lib.GP_EXPONENTIAL
+        c_schedule.params.exponential.alpha = schedule.alpha
+    elif type(schedule) is GPLinearSchedule:
+        c_schedule.type = lib.GP_LINEAR
+        c_schedule.params.linear.k = schedule.k
+    else:
+        raise GPError('Unsupported cooling schedule')
+
     exception = lib.gp_genpattern(
         c_collections,
         len(collections),
@@ -74,8 +95,12 @@ def gp_genpattern(collections, canvas_width, canvas_height, threshold, offset_ra
         canvas_height,
         threshold,
         offset_radius,
-        collection_offset_radius
+        collection_offset_radius,
+        c_schedule,
+        seed
     )
+
+    libc.free(c_schedule)
 
     if exception != ffi.NULL:
         text = ffi.string(exception).decode()

@@ -9,7 +9,7 @@ from genpattern import GPImgAlpha, gp_genpattern, GPExponentialSchedule, GPLinea
 
 
 
-def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=3, max_rotation=360):
+def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=1, max_rotation=0):
     """
     Load a PNG image, randomly upscale and rotate it, then extract its alpha values.
     Returns a tuple of (GPImgAlpha, PIL.Image) for each copy.
@@ -22,6 +22,7 @@ def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=3, max_rota
         result = []
 
         for _ in range(copies):
+
             # Randomly upscale and rotate the image
             scale_factor = random.randint(min_scale, max_scale)
             rotation_angle = random.uniform(0, max_rotation)
@@ -45,11 +46,11 @@ def main():
     SEED = 56
 
     random.seed(SEED)
-    images = ["test/image1.png", "test/image2.png"]
+    images = ["test/image1.png"]
 
-    WIDTH = 1024
-    HEIGHT = 1024
-    COPIES = 1024
+    WIDTH = 128
+    HEIGHT = 128
+    COPIES = 64
 
     # Create collections
     collections = [load_and_modify_image(path, copies=COPIES) for path in images]

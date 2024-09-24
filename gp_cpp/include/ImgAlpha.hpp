@@ -27,4 +27,6 @@ public:
 
   static constexpr uint8_t FILL_VALUE = 255;
 };
+
+std::ostream &operator<<(std::ostream &stream, const ImgAlpha &img);
 } // namespace gp

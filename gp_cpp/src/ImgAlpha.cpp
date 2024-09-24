@@ -19,4 +19,14 @@ uint8_t &ImgAlpha::operator[](const size_t i, const size_t j) const {
 
 size_t ImgAlpha::getWidth() const { return this->alpha.extent(1); }
 size_t ImgAlpha::getHeight() const { return this->alpha.extent(0); }
+
+std::ostream &operator<<(std::ostream &stream, const ImgAlpha &img) {
+  for (size_t i = 0; i < img.getWidth(); i++) {
+    for (size_t j = 0; j < img.getHeight(); j++) {
+      stream << static_cast<int>(img[i, j] == img.FILL_VALUE);
+    }
+    stream << std::endl;
+  }
+  return stream;
+}
 } // namespace gp

@@ -5,9 +5,7 @@
 namespace gp {
 class ImgAlphaFilledContour : public ImgAlpha {
 private:
-  std::vector<Point> contour;
-
-  enum class PixelState { NOT_CHECKED = 0, FILLED, CONTOUR };
+  enum class PixelState { NOT_CHECKED = 0, FILLED };
 
   template <typename Container>
   Container getFilteredPerimeter(std::function<bool(uint8_t)> predicate =
@@ -52,8 +50,6 @@ private:
   void generateAndFillContour(const uint8_t threshold);
 
 public:
-  const std::vector<Point> &getContour() const;
-
   using ImgAlpha::ImgAlpha;
   ImgAlphaFilledContour(const uint8_t *data, const size_t width,
                         const size_t height) = delete;

@@ -39,14 +39,11 @@ void ImgAlphaFilledContour::generateAndFillContour(const uint8_t threshold) {
         push_if_valid(Point{x, y + 1});
         push_if_valid(Point{x - 1, y});
         push_if_valid(Point{x, y - 1});
-      } else {
-        fill[y, x] = PixelState::CONTOUR;
       }
     }
   }
 
   if (fill_start_points.empty()) {
-    this->contour = this->getFilteredPerimeter<std::vector<Point>>();
     std::fill_n(this->alpha.data_handle(), this->alpha.size(),
                 ImgAlpha::FILL_VALUE);
     return;
@@ -54,18 +51,11 @@ void ImgAlphaFilledContour::generateAndFillContour(const uint8_t threshold) {
 
   for (ptrdiff_t i = 0; i < this->getHeight(); i++) {
     for (ptrdiff_t j = 0; j < this->getWidth(); j++) {
-      if (fill[i, j] == PixelState::CONTOUR) {
-        this->contour.emplace_back(j, i);
-        (*this)[i, j] = ImgAlpha::FILL_VALUE;
-      } else if (fill[i, j] == PixelState::NOT_CHECKED) {
+      if (fill[i, j] == PixelState::NOT_CHECKED) {
         (*this)[i, j] = ImgAlpha::FILL_VALUE;
       }
     }
   }
-}
-
-const std::vector<Point> &ImgAlphaFilledContour::getContour() const {
-  return this->contour;
 }
 
 ImgAlphaFilledContour::ImgAlphaFilledContour(const uint8_t *data,
@@ -78,6 +68,5 @@ ImgAlphaFilledContour::ImgAlphaFilledContour(const uint8_t *data,
 
 ImgAlphaFilledContour::ImgAlphaFilledContour(
     ImgAlphaFilledContour &&other) noexcept
-    : ImgAlpha(static_cast<ImgAlpha &&>(other)),
-      contour(std::move(other.contour)) {}
+    : ImgAlpha(static_cast<ImgAlpha &&>(other)) {}
 } // namespace gp

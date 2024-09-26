@@ -3,7 +3,7 @@
 
 namespace gp {
 BitImage::BitImage(const ImgAlpha &img)
-    : data(make_aligned_mdarray<bool>(img.getHeight(), img.getWidth())) {
+    : data(make_aligned_mdarray<bool>(img.getHeight(), img.getWidth())) { // TODO: determine bounds
   for (size_t row_idx = 0; row_idx < img.getHeight(); row_idx++) {
     for (size_t col_idx = 0; col_idx < img.getWidth(); col_idx++) {
       this->data[row_idx, col_idx] =

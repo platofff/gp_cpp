@@ -97,7 +97,7 @@ public:
     return std::nullopt;
   }
 
-  void addImage(const BitImage &img, const Point pos, const bool debugNPixels);
+  void addImage(const BitImage &img, const Point pos);
 };
 
 } // namespace gp

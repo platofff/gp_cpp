@@ -69,23 +69,10 @@ Canvas::Canvas(Canvas &&other)
       offsets(std::move(other.offsets)),
       deltaMaxInitial(std::move(other.deltaMaxInitial)), rng(other.rng) {}
 
-void Canvas::addImage(const BitImage &img, const Point pos,
-                      const bool debugNPixels) {
-#ifndef NDEBUG
-  const auto old_bits = this->nPixels();
-  const auto img_bits = img.nPixels();
-#endif
-
+void Canvas::addImage(const BitImage &img, const Point pos) {
   this->processImageIntersection(
       img, pos,
       [](auto &canvasChunk, const auto &imgChunk) { canvasChunk |= imgChunk; });
-
-#ifndef NDEBUG
-  const auto new_bits = this->nPixels();
-  if (debugNPixels) {
-    assert(new_bits == old_bits + img_bits);
-  }
-#endif
 }
 
 uint64_t Canvas::intersectionArea(const BitImage &img, const Point pos) const {

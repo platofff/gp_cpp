@@ -9,7 +9,7 @@ from genpattern import GPImgAlpha, gp_genpattern, GPExponentialSchedule, GPLinea
 
 
 
-def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=1, max_rotation=0):
+def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=3, max_rotation=360):
     """
     Load a PNG image, randomly upscale and rotate it, then extract its alpha values.
     Returns a tuple of (GPImgAlpha, PIL.Image) for each copy.
@@ -50,12 +50,12 @@ def main():
 
     WIDTH = 1024
     HEIGHT = 1024
-    COPIES = 512
+    COPIES = 1024
 
     # Create collections
     collections = [load_and_modify_image(path, copies=COPIES) for path in images]
     alphas = [[item[0] for item in coll] for coll in collections]
-    result = gp_genpattern(alphas, WIDTH, HEIGHT, 64, 0, 1, GPExponentialSchedule(0.95), SEED)
+    result = gp_genpattern(alphas, WIDTH, HEIGHT, 64, 2, 5, GPExponentialSchedule(0.95), SEED)
 
     # Create a blank canvas
     canvas = Image.new("RGBA", (WIDTH, HEIGHT), (255, 255, 255, 255))

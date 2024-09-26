@@ -1,4 +1,5 @@
 #include "ImgAlphaFilledContour.hpp"
+#include "ImgAlpha.hpp"
 
 #include <memory>
 #include <stack>

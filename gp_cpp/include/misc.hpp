@@ -137,6 +137,8 @@ template <typename T> T positive_modulo(const T i, const T n) {
   return (i % n + n) % n;
 }
 
+const aligned_mdarray<bool, 2> generateDisk(const ptrdiff_t r);
+
 } // namespace gp
 
 template <> struct std::hash<gp::Point> {

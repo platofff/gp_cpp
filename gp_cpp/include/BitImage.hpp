@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "ImgAlpha.hpp"
+#include "misc.hpp"
 
 namespace gp {
 class BitImage {
@@ -13,6 +14,7 @@ protected:
 
 public:
   BitImage(const ImgAlpha &img);
+  BitImage(const size_t height, const size_t width);
   BitImage(BitImage &&other) noexcept;
 
   BitImage(const BitImage &) = delete;

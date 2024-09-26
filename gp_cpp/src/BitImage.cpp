@@ -11,7 +11,7 @@ BitImage::BitImage(const ImgAlpha &img)
     }
   }
 }
-
+BitImage::BitImage(const size_t height, const size_t width) : data(make_aligned_mdarray<bool>(height, width)) {}
 BitImage::BitImage(BitImage &&other) noexcept : data(std::move(other.data)) {}
 
 ptrdiff_t BitImage::getWidth() const { return this->data.extent(1); }

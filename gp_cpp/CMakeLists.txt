@@ -9,8 +9,8 @@ if ("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" MATCHES "MSVC")
     
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /clang:-flto")
 else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra /clang:-Wno-sign-compare")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGSS} -Wall -Wextra /clang:-Wno-sign-compare")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-sign-compare")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGSS} -Wall -Wextra -Wno-sign-compare")
 
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -stdlib=libc++ -fsanitize=address -shared-libasan")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffp-contract=fast -stdlib=libc++")
@@ -24,7 +24,7 @@ set(SOURCE_FILES
     "src/ImgAlpha.cpp"
     "src/ImgAlphaFilledContour.cpp"
     "src/misc.cpp"
-    "src/OffsettedImgAlpha.cpp"
+    "src/OffsettedBitImage.cpp"
     "src/genpattern.cpp"
     "src/BitImage.cpp"
     "src/Canvas.cpp"
@@ -36,7 +36,7 @@ set(HEADER_FILES
     "include/ImgAlpha.hpp"
     "include/ImgAlphaFilledContour.hpp"
     "include/misc.hpp"
-    "include/OffsettedImgAlpha.hpp"
+    "include/OffsettedBitImage.hpp"
     "include/genpattern.h"
     "include/BitImage.hpp"
     "include/Canvas.hpp"

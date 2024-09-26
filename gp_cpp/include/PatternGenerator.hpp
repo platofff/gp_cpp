@@ -3,25 +3,24 @@
 #include "BitImage.hpp"
 #include "Canvas.hpp"
 #include "ImgAlphaFilledContour.hpp"
+#include "OffsettedBitImage.hpp"
 
-#include <random>
 #include <algorithm>
+#include <random>
 
 namespace gp {
 class PatternGenerator {
 private:
   std::vector<std::vector<BitImage>>
-      oCollections, // collections of images without offset
+      oCollections; // collections of images without offset
+  std::vector<std::vector<OffsettedBitImage>>
       rCollections, // collections of images with regular offset
       sCollections; // with increased offset
-  std::vector<std::vector<std::pair<Vector, Vector>>>
-      baseOffsets; // baseOffsets for images with regular and increased offsets
 
   const ptrdiff_t width;
   const ptrdiff_t height;
   const Box box;
   const double temperatureInitial;
-  
 
   std::vector<Point> getPlacementPoints(const Point &p,
                                         const ptrdiff_t img_width,
@@ -34,7 +33,7 @@ public:
       const size_t offset, const size_t collectionOffset,
       const double temperatureInitial);
 
-  template <typename CoolingSchedule> 
+  template <typename CoolingSchedule>
   std::vector<std::vector<std::vector<Point>>>
   generate(const uint32_t seed, const CoolingSchedule decreaseT) const {
     std::mt19937 rng(seed);
@@ -63,21 +62,16 @@ public:
           img, temperatureInitial, decreaseT);
       if (_p.has_value()) {
         const auto &p = *_p;
-        const auto [bo, sbo] = this->baseOffsets[collection_idx][img_idx];
         result[collection_idx][img_idx] =
             this->getPlacementPoints(p, img.getWidth(), img.getHeight());
 
-        Point rPos{p.getX() + bo.getX(), p.getY() + bo.getY()};
-        Point sPos{p.getX() + sbo.getX(), p.getY() + sbo.getY()};
-
         for (size_t i = 0; i < nCollections; i++) {
-          if (i != collection_idx) {
-            cCanvases[i].addImage(this->rCollections[collection_idx][img_idx],
-                                  rPos);
-          } else {
-            cCanvases[i].addImage(this->sCollections[collection_idx][img_idx],
-                                  sPos);
-          }
+          const auto &img = i == collection_idx
+                                ? this->sCollections[collection_idx][img_idx]
+                                : this->rCollections[collection_idx][img_idx];
+          const Point pos{p.getX() + img.getBaseOffset().getX(),
+                          p.getY() + img.getBaseOffset().getY()}; // TODO: Vector addition
+          cCanvases[i].addImage(img, pos);
         }
       }
     }

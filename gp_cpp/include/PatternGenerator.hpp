@@ -72,10 +72,10 @@ public:
         for (size_t i = 0; i < nCollections; i++) {
           if (i != collection_idx) {
             cCanvases[i].addImage(this->rCollections[collection_idx][img_idx],
-                                  rPos);
+                                  rPos, true);
           } else {
             cCanvases[i].addImage(this->sCollections[collection_idx][img_idx],
-                                  sPos);
+                                  sPos, false);
           }
         }
       }

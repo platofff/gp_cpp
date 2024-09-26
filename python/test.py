@@ -43,19 +43,19 @@ def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=1, max_rota
     return result
 
 def main():
-    SEED = 56
+    SEED = 566
 
     random.seed(SEED)
-    images = ["test/image1.png"]
+    images = ["test/image1.png", "test/image2.png"]
 
-    WIDTH = 128
-    HEIGHT = 128
-    COPIES = 64
+    WIDTH = 1024
+    HEIGHT = 1024
+    COPIES = 512
 
     # Create collections
     collections = [load_and_modify_image(path, copies=COPIES) for path in images]
     alphas = [[item[0] for item in coll] for coll in collections]
-    result = gp_genpattern(alphas, WIDTH, HEIGHT, 64, 5, 2, GPExponentialSchedule(0.95), SEED)
+    result = gp_genpattern(alphas, WIDTH, HEIGHT, 64, 0, 1, GPExponentialSchedule(0.95), SEED)
 
     # Create a blank canvas
     canvas = Image.new("RGBA", (WIDTH, HEIGHT), (255, 255, 255, 255))

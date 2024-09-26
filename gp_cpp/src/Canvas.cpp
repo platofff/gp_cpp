@@ -67,10 +67,10 @@ Canvas::Canvas(const ptrdiff_t width, const ptrdiff_t height, std::mt19937 &rng)
 Canvas::Canvas(Canvas &&other)
     : BitImage(static_cast<BitImage &&>(other)), areas(std::move(other.areas)),
       offsets(std::move(other.offsets)),
-      deltaMaxInitial(std::move(other.deltaMaxInitial)),
-      rng(other.rng) {}
+      deltaMaxInitial(std::move(other.deltaMaxInitial)), rng(other.rng) {}
 
-void Canvas::addImage(const BitImage &img, const Point pos) {
+void Canvas::addImage(const BitImage &img, const Point pos,
+                      const bool debugNPixels) {
 #ifndef NDEBUG
   const auto old_bits = this->nPixels();
   const auto img_bits = img.nPixels();
@@ -82,7 +82,9 @@ void Canvas::addImage(const BitImage &img, const Point pos) {
 
 #ifndef NDEBUG
   const auto new_bits = this->nPixels();
-  assert(new_bits == old_bits + img_bits);
+  if (debugNPixels) {
+    assert(new_bits == old_bits + img_bits);
+  }
 #endif
 }
 

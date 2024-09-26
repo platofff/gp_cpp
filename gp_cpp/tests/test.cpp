@@ -40,6 +40,7 @@ int main() {
   collections[0].emplace_back(data, W, H, 64);
   collections[0].emplace_back(data, W, H, 64);
 
+  /*
   PatternGenerator generator(128, 128, collections, 0, 0);
   auto result = generator.generate();
 
@@ -49,5 +50,5 @@ int main() {
         std::cout << p << std::endl;
       }
     }
-  }
+  }*/
 }

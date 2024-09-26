@@ -19,8 +19,9 @@ private:
 
   const ptrdiff_t width;
   const ptrdiff_t height;
-  const double temperatureInitial;
   const Box box;
+  const double temperatureInitial;
+  
 
   std::vector<Point> getPlacementPoints(const Point &p,
                                         const ptrdiff_t img_width,
@@ -81,7 +82,7 @@ public:
       }
     }
 
-    return std::move(result);
+    return result;
   }
 };
 } // namespace gp

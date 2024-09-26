@@ -25,14 +25,12 @@ OffsettedImgAlpha::generateDisk(const ptrdiff_t r) {
     }
   }
 
-  return std::move(disk);
+  return disk;
 }
 
 void OffsettedImgAlpha::minkowskiSum(const ImgAlphaFilledContour &img,
                                      const aligned_mdarray<uint8_t, 2> &disk,
                                      const ptrdiff_t r) {
-  using nlp = std::numeric_limits<ptrdiff_t>;
-
   const auto height = img.getHeight() + 2 * r;
   const auto width = img.getWidth() + 2 * r;
 

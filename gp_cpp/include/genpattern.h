@@ -52,16 +52,21 @@ const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
 // CFFI_END
 }
 
-#include "ImgAlpha.hpp"
+#if __has_include(<emscripten/bind.h>)
+
 #include "PatternGenerator.hpp"
 #include <vector>
 
 using namespace gp;
 
-std::shared_ptr<ImgAlpha> init_ImgAlpha(std::vector<uint8_t> &data,
-                                        const size_t width, const size_t height,
-                                        const uint8_t threshold);
-PatternGenerator *init_PatternGenerator(
+std::shared_ptr<ImgAlphaFilledContour> init_ImgAlphaFilledContour(
+    std::vector<uint8_t> &data, const size_t width, const size_t height,
+    const uint8_t threshold);
+std::shared_ptr<PatternGenerator> init_PatternGenerator(
     const size_t width, const size_t height,
-    const std::vector<std::vector<std::shared_ptr<ImgAlpha>>> &collections,
-    const size_t offset, const size_t collection_offset);
+    const std::vector<std::vector<std::shared_ptr<ImgAlphaFilledContour>>>
+        &collections,
+    const size_t offset, const size_t collection_offset,
+    const double temperatureInitial);
+
+#endif

@@ -46,7 +46,7 @@ def main():
     SEED = 566
 
     random.seed(SEED)
-    images = ["test/image1.png", "test/image2.png"]
+    images = ["test/image1.png", "test/image2.png", "test/image3.png"]
 
     WIDTH = 1024
     HEIGHT = 1024

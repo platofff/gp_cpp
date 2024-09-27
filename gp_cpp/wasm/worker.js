@@ -2,6 +2,7 @@
 let eventQueue = []
 
 const methods = {
+  // TODO: type for coolingSchedule
   /**
    * Runs the pattern generator and sends the result back to main thread
    * @param {Array<Array<ImageData>>} collections
@@ -10,8 +11,11 @@ const methods = {
    * @param {Number} threshold
    * @param {Number} offsetRadius
    * @param {Number} collectionOffsetRadius
+   * @param {Number} tInitial
+   * @param {Any} coolingSchedule
+   * @param {Number} seed
    */
-  run(collections, canvasWidth, canvasHeight, threshold, offsetRadius, collectionOffsetRadius) {
+  run(collections, canvasWidth, canvasHeight, threshold, offsetRadius, collectionOffsetRadius, tInitial, coolingSchedule, seed) {
     const collectionsV = new Module.CollectionVector()
 
     for (const c of collections) {
@@ -23,15 +27,15 @@ const methods = {
           data.push_back(img.data[i + 3])
         }
 
-        const imgAlpha = new Module.ImgAlpha(data, img.width, img.height, threshold)
+        const imgAlpha = new Module.ImgAlphaFilledContour(data, img.width, img.height, threshold)
         imagesV.push_back(imgAlpha)
       }
 
       collectionsV.push_back(imagesV)
     }
 
-    const patternGenerator = new Module.PatternGenerator(canvasWidth, canvasHeight, collectionsV, offsetRadius, collectionOffsetRadius)
-    const resultV = patternGenerator.generate()
+    const patternGenerator = new Module.PatternGenerator(canvasWidth, canvasHeight, collectionsV, offsetRadius, collectionOffsetRadius, tInitial)
+    const resultV = patternGenerator[`generate_${coolingSchedule.name}`](seed, coolingSchedule.params)
     
     const result = []
 

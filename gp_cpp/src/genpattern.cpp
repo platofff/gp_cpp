@@ -73,24 +73,21 @@ const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
 
 using namespace gp;
 
-// TODO: rename symbol
-std::shared_ptr<ImgAlphaFilledContour> init_ImgAlpha(std::vector<uint8_t> &data,
-                                                     const size_t width,
-                                                     const size_t height,
-                                                     const uint8_t threshold) {
-  auto obj = std::make_shared<ImgAlphaFilledContour>(data.data(), width, height,
+std::shared_ptr<ImgAlphaFilledContour> init_ImgAlphaFilledContour(
+    std::vector<uint8_t> &data, const size_t width, const size_t height,
+    const uint8_t threshold) {
+  return std::make_shared<ImgAlphaFilledContour>(data.data(), width, height,
                                                      threshold);
-  return obj;
 }
 
 std::vector<std::vector<ImgAlphaFilledContour>> convertToImgAlphaVec(
     const std::vector<std::vector<std::shared_ptr<ImgAlphaFilledContour>>>
         &src) {
-  std::vector<std::vector<ImgAlpha>> dest;
+  std::vector<std::vector<ImgAlphaFilledContour>> dest;
   dest.reserve(src.size());
 
   for (const auto &innerVec : src) {
-    std::vector<ImgAlpha> tempVec;
+    std::vector<ImgAlphaFilledContour> tempVec;
     tempVec.reserve(innerVec.size());
 
     for (const auto &imgPtr : innerVec) {
@@ -108,13 +105,15 @@ std::vector<std::vector<ImgAlphaFilledContour>> convertToImgAlphaVec(
   return dest;
 }
 
-PatternGenerator *init_PatternGenerator(
+std::shared_ptr<PatternGenerator> init_PatternGenerator(
     const size_t width, const size_t height,
     const std::vector<std::vector<std::shared_ptr<ImgAlphaFilledContour>>>
         &collections,
-    const size_t offset, const size_t collection_offset) {
-  return new PatternGenerator{width, height, convertToImgAlphaVec(collections),
-                              offset, collection_offset};
+    const size_t offset, const size_t collection_offset,
+    const double temperatureInitial) {
+  return std::make_shared<PatternGenerator>(
+      width, height, convertToImgAlphaVec(collections), offset,
+      collection_offset, temperatureInitial);
 }
 
 #include <emscripten/bind.h>
@@ -124,16 +123,18 @@ using namespace emscripten;
 EMSCRIPTEN_BINDINGS(genpattern) {
   register_vector<uint8_t>("Uint8Vector");
 
-  // TODO: rename symbol
-  class_<ImgAlphaFilledContour>("ImgAlpha")
-      .smart_ptr_constructor("ImgAlpha", &init_ImgAlpha);
+  class_<ImgAlphaFilledContour>("ImgAlphaFilledContour")
+      .smart_ptr_constructor("ImgAlphaFilledContour", &init_ImgAlphaFilledContour);
 
   register_vector<std::shared_ptr<ImgAlphaFilledContour>>("Collection");
 
   register_vector<std::vector<std::shared_ptr<ImgAlphaFilledContour>>>(
       "CollectionVector");
 
-  value_object<Point>("Point").field("x", &Point::x).field("y", &Point::y);
+  class_<Point>("Point")
+    .constructor<const ptrdiff_t, const ptrdiff_t>()
+    .property("x", &Point::getX)
+    .property("y", &Point::getY);
 
   register_vector<Point>("PointVector");
 
@@ -141,9 +142,16 @@ EMSCRIPTEN_BINDINGS(genpattern) {
 
   register_vector<std::vector<std::vector<Point>>>("PointVectorVectorVector");
 
+  value_object<ExponentialSchedule>("schedule_exponential")
+    .field("alpha", &ExponentialSchedule::alpha);
+
+  value_object<LinearSchedule>("schedule_linear")
+    .field("k", &LinearSchedule::k);
+
   class_<PatternGenerator>("PatternGenerator")
-      .constructor(&init_PatternGenerator)
-      .function("generate", &PatternGenerator::generate);
+      .smart_ptr_constructor("PatternGenerator", &init_PatternGenerator)
+      .function("generate_exponential", &PatternGenerator::generate<ExponentialSchedule>)
+      .function("generate_linear", &PatternGenerator::generate<LinearSchedule>);
 }
 
 #endif

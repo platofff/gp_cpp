@@ -31,14 +31,10 @@ private:
   std::vector<PlacementArea> placementAreas(const BitImage &img,
                                             const Point pos) const;
 
-  /*void processImageIntersection(
-      const BitImage &img, const Point pos,
-      std::function<bool(const bool, const bool)> action);*/
-
   using nlp = std::numeric_limits<ptrdiff_t>;
 
   Point wrapPosition(const ptrdiff_t x, const ptrdiff_t y) const;
-  uint64_t intersectionArea(const BitImage &img, const Point pos) const;
+  uint64_t intersectionArea(const BitImage &img, const Point &pos) const;
 
 public:
   Canvas(const ptrdiff_t width, const ptrdiff_t height, std::mt19937 &rng);
@@ -98,7 +94,7 @@ public:
     return std::nullopt;
   }
 
-  void addImage(const BitImage &img, const Point pos);
+  void addImage(const BitImage &img, const Point &pos);
 };
 
 } // namespace gp

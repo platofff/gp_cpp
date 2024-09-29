@@ -16,7 +16,9 @@ private:
 
 protected:
   boost::dynamic_bitset<> data;
-  void setPixel(const size_t i, const size_t j, const bool value);
+  inline void setPixel(const size_t i, const size_t j, const bool value) {
+    this->data[i * this->getWidth() + j] = value;
+  }
 
 public:
   BitImage(const ImgAlpha &img);
@@ -26,12 +28,14 @@ public:
   BitImage(const BitImage &) = delete;
   BitImage &operator=(const BitImage &) = delete;
 
-  ptrdiff_t getWidth() const;
-  ptrdiff_t getHeight() const;
+  inline ptrdiff_t getWidth() const { return this->width; }
+  inline ptrdiff_t getHeight() const { return this->height; }
 
   uint64_t nPixels() const;
 
-  bool operator[](const size_t i, const size_t j) const;
+  inline bool operator[](const size_t i, const size_t j) const {
+    return data[i * this->getWidth() + j];
+  }
 };
 
 std::ostream &operator<<(std::ostream &stream, const BitImage &image);

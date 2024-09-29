@@ -37,8 +37,4 @@ OffsettedBitImage::OffsettedBitImage(const ImgAlphaFilledContour &img,
     }
   }
 }
-
-const Vector &OffsettedBitImage::getBaseOffset() const {
-  return this->baseOffset;
-}
 } // namespace gp

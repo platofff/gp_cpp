@@ -32,7 +32,6 @@ set(SOURCE_FILES
     "src/BitImage.cpp"
     "src/Canvas.cpp"
     "src/PatternGenerator.cpp"
-    "src/CoolingSchedules.cpp"
 )
 
 set(HEADER_FILES

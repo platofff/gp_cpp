@@ -22,9 +22,27 @@ private:
   const Box box;
   const double temperatureInitial;
 
-  std::vector<Point> getPlacementPoints(const Point &p,
-                                        const ptrdiff_t img_width,
-                                        const ptrdiff_t img_height) const;
+  inline std::vector<Point>
+  getPlacementPoints(const Point &p, const ptrdiff_t img_width,
+                     const ptrdiff_t img_height) const {
+    const std::array<Point, 4> points = {
+        {p,
+         {p.getX() - this->width, p.getY()},
+         {p.getX(), p.getY() - this->height},
+         {p.getX() - this->width, p.getY() - this->height}}};
+    std::vector<Point> result;
+    result.reserve(4);
+
+    for (const auto &point : points) {
+      Box img_box = {
+          point, Point{point.getX() + img_width, point.getY() + img_height}};
+      if (img_box.intersect(this->box).isValid()) {
+        result.push_back(point);
+      }
+    }
+
+    return result;
+  }
 
 public:
   PatternGenerator(
@@ -69,8 +87,9 @@ public:
           const auto &img = i == collection_idx
                                 ? this->sCollections[collection_idx][img_idx]
                                 : this->rCollections[collection_idx][img_idx];
-          const Point pos{p.getX() + img.getBaseOffset().getX(),
-                          p.getY() + img.getBaseOffset().getY()}; // TODO: Vector addition
+          const Point pos{
+              p.getX() + img.getBaseOffset().getX(),
+              p.getY() + img.getBaseOffset().getY()}; // TODO: Vector addition
           cCanvases[i].addImage(img, pos);
         }
       }

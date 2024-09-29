@@ -4,28 +4,6 @@
 #include "misc.hpp"
 
 namespace gp {
-std::vector<Point>
-PatternGenerator::getPlacementPoints(const Point &p, const ptrdiff_t img_width,
-                                     const ptrdiff_t img_height) const {
-  const std::array<Point, 4> points = {
-      {p,
-       {p.getX() - this->width, p.getY()},
-       {p.getX(), p.getY() - this->height},
-       {p.getX() - this->width, p.getY() - this->height}}};
-  std::vector<Point> result;
-  result.reserve(4);
-
-  for (const auto &point : points) {
-    Box img_box = {point,
-                   Point{point.getX() + img_width, point.getY() + img_height}};
-    if (img_box.intersect(this->box).isValid()) {
-      result.push_back(point);
-    }
-  }
-
-  return result;
-}
-
 PatternGenerator::PatternGenerator(
     const size_t width, const size_t height,
     const std::vector<std::vector<ImgAlphaFilledContour>> &collections,

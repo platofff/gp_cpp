@@ -26,8 +26,8 @@ public:
   T getX() const { return this->x; };
   T getY() const { return this->y; };
 
-  friend std::ostream& operator<<( std::ostream& stream, const TPoint& point ) {
-    return stream << point.getX() << ";" << point.getY();  
+  friend std::ostream &operator<<(std::ostream &stream, const TPoint &point) {
+    return stream << point.getX() << ";" << point.getY();
   }
 };
 
@@ -42,18 +42,38 @@ private:
   mutable std::optional<bool> valid;
 
 public:
-  Box(const Point &min, const Point &max);
+  inline Box(const Point &min, const Point &max) : min(min), max(max) {}
+  inline bool isValid() const {
+    if (!this->valid.has_value()) {
+      this->valid = this->min.getX() <= this->max.getX() &&
+                    this->min.getY() <= this->max.getY();
+    }
+    return *this->valid;
+  }
 
-  Box intersect(const Box &other) const;
-  Box translate(const Vector &vec) const;
+  inline Box intersect(const Box &other) const {
+    return Box{{std::max(this->min.getX(), other.min.getX()),
+                std::max(this->min.getY(), other.min.getY())},
+               {std::min(this->max.getX(), other.max.getX()),
+                std::min(this->max.getY(), other.max.getY())}};
+  }
 
-  ptrdiff_t getWidth() const;
-  ptrdiff_t getHeight() const;
+  inline Box translate(const Vector &vec) const {
+    return Box{{this->min.getX() + vec.getX(), this->min.getY() + vec.getY()},
+               {this->max.getX() + vec.getX(), this->max.getY() + vec.getY()}};
+  }
 
-  bool isValid() const;
+  inline ptrdiff_t getWidth() const {
+    return this->max.getX() - this->min.getX() + 1;
+  }
 
-  const Point &getMin() const;
-  const Point &getMax() const;
+  inline ptrdiff_t getHeight() const {
+    return this->max.getY() - this->min.getY() + 1;
+  }
+
+  inline const Point &getMin() const { return this->min; }
+
+  inline const Point &getMax() const { return this->max; }
 };
 
 std::ostream &operator<<(std::ostream &stream, const Box &box);

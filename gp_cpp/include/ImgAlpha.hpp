@@ -21,9 +21,12 @@ public:
 
   ~ImgAlpha() = default;
 
-  uint8_t &operator[](const size_t i, const size_t j) const;
-  size_t getWidth() const;
-  size_t getHeight() const;
+  inline uint8_t &operator[](const size_t i, const size_t j) const {
+    return this->alpha[i, j];
+  }
+
+  inline size_t getWidth() const { return this->alpha.extent(1); }
+  inline size_t getHeight() const { return this->alpha.extent(0); }
 
   static constexpr uint8_t FILL_VALUE = 255;
 };

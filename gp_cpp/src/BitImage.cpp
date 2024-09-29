@@ -16,9 +16,6 @@ BitImage::BitImage(const size_t height, const size_t width)
     : height(height), width(width), data(boost::dynamic_bitset<>(height * width)) {}
 BitImage::BitImage(BitImage &&other) noexcept : height(other.height), width(other.width), data(std::move(other.data)) {}
 
-ptrdiff_t BitImage::getWidth() const { return this->width; }
-ptrdiff_t BitImage::getHeight() const { return this->height; }
-
 uint64_t BitImage::nPixels() const {
   uint64_t res = 0;
   for (size_t i = 0; i < this->getHeight(); i++) {
@@ -29,10 +26,6 @@ uint64_t BitImage::nPixels() const {
     }
   }
   return res;
-}
-
-bool BitImage::operator[](const size_t i, const size_t j) const {
- return data[i * this->getWidth() + j];
 }
 
 std::ostream &operator<<(std::ostream &stream, const BitImage &image) {
@@ -46,7 +39,4 @@ std::ostream &operator<<(std::ostream &stream, const BitImage &image) {
   return stream;
 }
 
-void BitImage::setPixel(const size_t i, const size_t j, const bool value) {
-  this->data[i * this->getWidth() + j] = value;
-}
 } // namespace gp

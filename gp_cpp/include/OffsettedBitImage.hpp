@@ -16,6 +16,8 @@ protected:
 public:
   OffsettedBitImage(const ImgAlphaFilledContour &img,
                     const aligned_mdarray<bool, 2> &disk, const size_t r);
-  const Vector &getBaseOffset() const;
+  inline const Vector &getBaseOffset() const {
+    return this->baseOffset;
+  }
 };
 } // namespace gp

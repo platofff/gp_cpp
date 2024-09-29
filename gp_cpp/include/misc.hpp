@@ -14,17 +14,17 @@ private:
   T x, y;
 
 public:
-  TPoint(const T x, const T y) : x(x), y(y){};
+  inline TPoint(const T x, const T y) : x(x), y(y){};
 
-  bool operator==(const TPoint &other) const {
+  inline bool operator==(const TPoint &other) const {
     return this->getX() == other.getX() && this->getY() == other.getY();
   };
-  TPoint translate(const TPoint &vec) const {
+  inline TPoint translate(const TPoint &vec) const {
     return {this->getX() + vec.getX(), this->getY() + vec.getY()};
   };
 
-  T getX() const { return this->x; };
-  T getY() const { return this->y; };
+  inline T getX() const { return this->x; };
+  inline T getY() const { return this->y; };
 
   friend std::ostream &operator<<(std::ostream &stream, const TPoint &point) {
     return stream << point.getX() << ";" << point.getY();
@@ -106,7 +106,7 @@ private:
   aligned_unique_array_ptr<T> buf{nullptr};
   size_t buf_size;
 
-  void move_from(aligned_mdarray &&other) noexcept {
+  inline void move_from(aligned_mdarray &&other) noexcept {
     this->buf_size = other.buf_size;
     const auto extents = other.extents();
     this->buf = std::move(other.buf);
@@ -115,7 +115,7 @@ private:
   }
 
 public:
-  aligned_mdarray(std::array<size_t, dim> extents) {
+  inline aligned_mdarray(std::array<size_t, dim> extents) {
     this->buf_size = 1;
     for (size_t e : extents) {
       this->buf_size *= e;
@@ -125,18 +125,18 @@ public:
     std::mdspan<T, std::dextents<size_t, dim>>::operator=({buf.get(), extents});
   }
 
-  aligned_mdarray() {}
+  inline aligned_mdarray() {}
 
   aligned_mdarray(const aligned_mdarray &) = delete;
   aligned_mdarray &operator=(const aligned_mdarray &) = delete;
 
   // Move constructor
-  aligned_mdarray(aligned_mdarray &&other) noexcept {
+  inline aligned_mdarray(aligned_mdarray &&other) noexcept {
     this->move_from(std::move(other));
   }
 
   // Move assignment operator
-  aligned_mdarray &operator=(aligned_mdarray &&other) noexcept {
+  inline aligned_mdarray &operator=(aligned_mdarray &&other) noexcept {
     if (this == &other) {
       return *this; // self-assignment check
     }
@@ -144,16 +144,16 @@ public:
     return *this;
   }
 
-  size_t size() { return this->buf_size; }
+  inline size_t size() { return this->buf_size; }
 };
 
 template <typename T, typename... Extents>
-auto make_aligned_mdarray(Extents... extents) {
+inline auto make_aligned_mdarray(Extents... extents) {
   return aligned_mdarray<T, sizeof...(Extents)>{
       std::array<size_t, sizeof...(Extents)>{extents...}};
 }
 
-template <typename T> T positive_modulo(const T i, const T n) {
+template <typename T> inline T positive_modulo(const T i, const T n) {
   return (i % n + n) % n;
 }
 

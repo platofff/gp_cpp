@@ -4,13 +4,19 @@
 #include <cstddef>
 #include <iostream>
 
+#include <boost/dynamic_bitset.hpp>
+
 #include "ImgAlpha.hpp"
-#include "misc.hpp"
+#include "boost/dynamic_bitset/dynamic_bitset.hpp"
 
 namespace gp {
 class BitImage {
+private:
+  ptrdiff_t height, width;
+
 protected:
-  aligned_mdarray<bool, 2> data;
+  boost::dynamic_bitset<> data;
+  void setPixel(const size_t i, const size_t j, const bool value);
 
 public:
   BitImage(const ImgAlpha &img);
@@ -25,7 +31,7 @@ public:
 
   uint64_t nPixels() const;
 
-  const bool &operator[](const size_t i, const size_t j) const;
+  bool operator[](const size_t i, const size_t j) const;
 };
 
 std::ostream &operator<<(std::ostream &stream, const BitImage &image);

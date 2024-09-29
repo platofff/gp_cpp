@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <optional>
 #include <random>
 
 namespace gp {
@@ -30,9 +31,9 @@ private:
   std::vector<PlacementArea> placementAreas(const BitImage &img,
                                             const Point pos) const;
 
-  void processImageIntersection(
+  /*void processImageIntersection(
       const BitImage &img, const Point pos,
-      std::function<void(bool &, const bool &)> action) const;
+      std::function<bool(const bool, const bool)> action);*/
 
   using nlp = std::numeric_limits<ptrdiff_t>;
 

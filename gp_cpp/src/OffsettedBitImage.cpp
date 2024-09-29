@@ -31,7 +31,7 @@ OffsettedBitImage::OffsettedBitImage(const ImgAlphaFilledContour &img,
           }
           const auto x = pos.getX() + j;
           const auto y = pos.getY() + i;
-          this->data[y, x] = ImgAlpha::FILL_VALUE;
+          this->setPixel(y, x, true);
         }
       }
     }

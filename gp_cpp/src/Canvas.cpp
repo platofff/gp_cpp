@@ -37,22 +37,6 @@ std::vector<PlacementArea> Canvas::placementAreas(const BitImage &img,
   return out;
 }
 
-void Canvas::processImageIntersection(
-    const BitImage &img, const Point pos,
-    std::function<void(bool &, const bool &)> action) const {
-  const auto areas = this->placementAreas(img, pos);
-
-  for (const auto &pa : areas) {
-    for (ptrdiff_t i = pa.imageStart.getY(), ci = pa.canvasStart.getY();
-         i < pa.imageStart.getY() + pa.bounds.getHeight(); i++, ci++) {
-      for (ptrdiff_t j = pa.imageStart.getX(), cj = pa.canvasStart.getX();
-           j < pa.imageStart.getX() + pa.bounds.getWidth(); j++, cj++) {
-        action(this->data[ci, cj], img[i, j]);
-      }
-    }
-  }
-}
-
 Canvas::Canvas(const ptrdiff_t width, const ptrdiff_t height, std::mt19937 &rng)
     : BitImage(ImgAlpha(nullptr, width, height)),
       areas{{{{0, height}, {width - 1, nlp::max()}},
@@ -70,19 +54,34 @@ Canvas::Canvas(Canvas &&other)
       deltaMaxInitial(std::move(other.deltaMaxInitial)), rng(other.rng) {}
 
 void Canvas::addImage(const BitImage &img, const Point pos) {
-  this->processImageIntersection(
-      img, pos,
-      [](auto &canvasChunk, const auto &imgChunk) { canvasChunk |= imgChunk; });
+  const auto areas = this->placementAreas(img, pos);
+
+  for (const auto &pa : areas) {
+    for (ptrdiff_t i = pa.imageStart.getY(), ci = pa.canvasStart.getY();
+         i < pa.imageStart.getY() + pa.bounds.getHeight(); i++, ci++) {
+      for (ptrdiff_t j = pa.imageStart.getX(), cj = pa.canvasStart.getX();
+           j < pa.imageStart.getX() + pa.bounds.getWidth(); j++, cj++) {
+        this->setPixel(ci, cj, (*this)[ci, cj] || img[i, j]);
+      }
+    }
+  }
 }
 
 uint64_t Canvas::intersectionArea(const BitImage &img, const Point pos) const {
   uint64_t res = 0;
-  this->processImageIntersection(
-      img, pos, [&res](auto &canvasChunk, const auto &imgChunk) {
-        if (canvasChunk & imgChunk) {
+  const auto areas = this->placementAreas(img, pos);
+
+  for (const auto &pa : areas) {
+    for (ptrdiff_t i = pa.imageStart.getY(), ci = pa.canvasStart.getY();
+         i < pa.imageStart.getY() + pa.bounds.getHeight(); i++, ci++) {
+      for (ptrdiff_t j = pa.imageStart.getX(), cj = pa.canvasStart.getX();
+           j < pa.imageStart.getX() + pa.bounds.getWidth(); j++, cj++) {
+        if ((*this)[ci, cj] && img[i, j]) {
           res++;
         }
-      });
+      }
+    }
+  }
   return res;
 }
 

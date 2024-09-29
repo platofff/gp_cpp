@@ -11,7 +11,7 @@
 namespace gp {
 class BitImage {
 public:
-  using Block = uint64_t;
+  using Block = size_t;
   static constexpr size_t bits_per_block = sizeof(Block) * 8;
 
 private:
@@ -19,15 +19,15 @@ private:
   size_t bitset_size;
 
 protected:
-  std::vector<uint64_t> data;
+  std::vector<Block> data;
   inline void setPixel(const size_t i, const size_t j, const bool value) {
     const size_t index = i * this->getWidth() + j;
     const size_t vector_index =
         index /
-        bits_per_block; // Calculate which uint64_t element contains the bit
+        bits_per_block; // Calculate which element contains the bit
     const size_t bit_index =
         index %
-        bits_per_block; // Find the bit position within that uint64_t element
+        bits_per_block; // Find the bit position within that element
     if (value) {
       data[vector_index] |= (static_cast<Block>(1) << bit_index); // Set the bit
     } else {

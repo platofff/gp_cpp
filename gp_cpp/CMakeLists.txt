@@ -1,8 +1,5 @@
 ﻿option(BUILD_TESTS "Build the test executable" ON)
 
-# Find Boost without specifying the component since dynamic_bitset is header-only
-find_package(Boost REQUIRED)
-
 if ("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" MATCHES "MSVC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /clang:-Wall /clang:-Wextra /clang:-Wno-sign-compare")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /clang:-Wall /clang:-Wextra /clang:-Wno-sign-compare")
@@ -59,9 +56,6 @@ endif()
 set_property(TARGET genpattern PROPERTY CXX_STANDARD 23)
 target_include_directories(genpattern PRIVATE "include")
 
-# Include Boost headers
-target_include_directories(genpattern PRIVATE ${Boost_INCLUDE_DIRS})
-
 # If building tests, set up the test executable
 if (BUILD_TESTS)
     add_executable(genpattern_test
@@ -70,5 +64,4 @@ if (BUILD_TESTS)
     )
     set_property(TARGET genpattern_test PROPERTY CXX_STANDARD 23)
     target_include_directories(genpattern_test PRIVATE "include")
-    target_include_directories(genpattern_test PRIVATE ${Boost_INCLUDE_DIRS})
 endif()

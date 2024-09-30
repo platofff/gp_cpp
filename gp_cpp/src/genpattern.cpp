@@ -7,7 +7,7 @@
 
 extern "C" {
 
-const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
+GP_API const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
                           const size_t canvas_width, const size_t canvas_height,
                           const uint8_t threshold, const size_t offset_radius,
                           const size_t collection_offset_radius,

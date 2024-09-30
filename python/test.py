@@ -2,8 +2,9 @@
 from PIL import Image
 import random
 import os
+import sys
 
-os.chdir('/home/a/projects/gp_cpp/python')
+os.chdir(os.path.dirname(sys.argv[0]))
 
 from genpattern import GPImgAlpha, gp_genpattern, GPExponentialSchedule, GPLinearSchedule
 

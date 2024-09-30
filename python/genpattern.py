@@ -1,14 +1,22 @@
 import ctypes.util
 from cffi import FFI
 import re
+import os
+
+
 
 ffi = FFI()
 
 with open('genpattern.h', 'r') as hf:
-    ffi.cdef(re.search(r'\/\/ CFFI_BEGIN.*?\/\/ CFFI_END', hf.read(), re.DOTALL).group())
+    ffi.cdef(re.search(r'\/\/ CFFI_BEGIN.*?\/\/ CFFI_END', hf.read(), re.DOTALL).group().replace('GP_API', ''))
 
-lib = ffi.dlopen('./libgenpattern.so')
-libc = ffi.dlopen(ctypes.util.find_library('c'))
+if os.name == 'nt':
+    lib = ffi.dlopen('genpattern.dll')
+    libc = ffi.dlopen(ctypes.util.find_library('msvcrt'))
+else:
+    lib = ffi.dlopen('libgenpattern.so')
+    libc = ffi.dlopen(ctypes.util.find_library('c'))
+
 ffi.cdef('''void *calloc( size_t num, size_t size );
 void* memcpy( void *restrict dest, const void *restrict src, size_t count );
 void free( void *ptr );''')

@@ -3,6 +3,12 @@
 #include <cstddef>
 #include <cstdint>
 
+#ifdef _WIN32
+    #define GP_API __declspec(dllexport)
+#else
+    #define GP_API
+#endif
+
 extern "C" {
 // CFFI_BEGIN
 typedef struct GPPoint {
@@ -44,7 +50,7 @@ typedef struct GPSchedule {
   } params;
 } GPSchedule;
 
-const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
+GP_API const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
                           const size_t canvas_width, const size_t canvas_height,
                           const uint8_t threshold, const size_t offset_radius,
                           const size_t collection_offset_radius,

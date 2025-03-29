@@ -10,7 +10,7 @@ from genpattern import GPImgAlpha, gp_genpattern, GPExponentialSchedule, GPLinea
 
 
 
-def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=3, max_rotation=360):
+def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=2, max_rotation=360):
     """
     Load a PNG image, randomly upscale and rotate it, then extract its alpha values.
     Returns a tuple of (GPImgAlpha, PIL.Image) for each copy.
@@ -25,11 +25,11 @@ def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=3, max_rota
         for _ in range(copies):
 
             # Randomly upscale and rotate the image
-            scale_factor = random.randint(min_scale, max_scale)
-            rotation_angle = random.uniform(0, max_rotation)
+            scale_factor = random.uniform(min_scale, max_scale)
+            rotation_angle = random.randint(0, max_rotation)
             
             scaled_img = img.resize((int(img.width * scale_factor), int(img.height * scale_factor)), resample=Image.Resampling.NEAREST)
-            rotated_img = scaled_img.rotate(rotation_angle, expand=True, resample=Image.Resampling.BILINEAR)
+            rotated_img = scaled_img.rotate(rotation_angle, expand=True, resample=Image.Resampling.NEAREST)
 
             # Extract the alpha channel
             if rotated_img.mode == "RGBA":
@@ -44,19 +44,20 @@ def load_and_modify_image(filepath, copies=1, min_scale=1, max_scale=3, max_rota
     return result
 
 def main():
-    SEED = 566
+    SEED = 42
 
     random.seed(SEED)
-    images = ["test/image1.png", "test/image2.png", "test/image3.png"]
+    #images = ["test/a1.png", "test/a2.png", "test/a3.png", "test/a4.png", "test/a5.png"]
+    images = ["test/b1.png", "test/b2.png", "test/b3.png", "test/b4.png"]
 
-    WIDTH = 1024
-    HEIGHT = 1024
-    COPIES = 1024
+    WIDTH = 512
+    HEIGHT = 512
+    COPIES = 100
 
     # Create collections
     collections = [load_and_modify_image(path, copies=COPIES) for path in images]
     alphas = [[item[0] for item in coll] for coll in collections]
-    result = gp_genpattern(alphas, WIDTH, HEIGHT, 64, 2, 5, GPExponentialSchedule(0.95), SEED)
+    result = gp_genpattern(alphas, WIDTH, HEIGHT, 64, 5, 20, GPExponentialSchedule(0.8), SEED)
 
     # Create a blank canvas
     canvas = Image.new("RGBA", (WIDTH, HEIGHT), (255, 255, 255, 255))

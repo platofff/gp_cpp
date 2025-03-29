@@ -14,7 +14,7 @@ if os.name == 'nt':
     lib = ffi.dlopen('genpattern.dll')
     libc = ffi.dlopen(ctypes.util.find_library('msvcrt'))
 else:
-    lib = ffi.dlopen('libgenpattern.so')
+    lib = ffi.dlopen('./libgenpattern.so')
     libc = ffi.dlopen(ctypes.util.find_library('c'))
 
 ffi.cdef('''void *calloc( size_t num, size_t size );

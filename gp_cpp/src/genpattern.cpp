@@ -4,6 +4,7 @@
 #include "ImgAlphaFilledContour.hpp"
 #include "PatternGenerator.hpp"
 #include <exception>
+#include <stdexcept>
 
 extern "C" {
 
@@ -33,13 +34,15 @@ GP_API const char *gp_genpattern(GPCollection *collections, const size_t n_colle
   std::vector<std::vector<std::vector<Point>>> result;
   try {
     switch (schedule->type) {
-    case GP_EXPONENTIAL:
+    case GP_SCHEDULE_EXPONENTIAL:
       result = pg.generate(
           seed, ExponentialSchedule(schedule->params.exponential.alpha));
       break;
-    case GP_LINEAR:
+    case GP_SCHEDULE_LINEAR:
       result = pg.generate(seed, LinearSchedule(schedule->params.linear.k));
       break;
+    default:
+      throw std::runtime_error("Unknown schedule type");
     }
   } catch (std::exception &e) {
     const char *what = e.what();

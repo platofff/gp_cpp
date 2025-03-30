@@ -31,7 +31,8 @@ typedef struct GPCollection {
   GPImgAlpha *images;
 } GPCollection;
 
-typedef enum GPScheduleType { GP_EXPONENTIAL, GP_LINEAR } GPScheduleType;
+const uint8_t GP_SCHEDULE_EXPONENTIAL = 0x00;
+const uint8_t GP_SCHEDULE_LINEAR = 0x01;
 
 typedef struct GPExponentialScheduleParams {
   double alpha;
@@ -42,7 +43,7 @@ typedef struct GPLinearScheduleParams {
 } GPLinearScheduleParams;
 
 typedef struct GPSchedule {
-  GPScheduleType type;
+  uint8_t type; // must be on of GP_SCHEDULE_* constants
 
   union {
     GPExponentialScheduleParams exponential;

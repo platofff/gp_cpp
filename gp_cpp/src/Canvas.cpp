@@ -8,8 +8,8 @@
 namespace gp {
 std::vector<PlacementArea>
 Canvas::placementAreas(const BitImage &img, const Point pos) const noexcept {
-  assert(img.getHeight() > this->getHeight() &&
-         img.getWidth() > this->getWidth());
+  assert(img.getHeight() < this->getHeight() &&
+         img.getWidth() < this->getWidth());
   assert(pos.getX() >= 0 && pos.getX() < this->getWidth());
   assert(pos.getY() >= 0 && pos.getY() < this->getHeight());
 

@@ -43,7 +43,7 @@ set(HEADER_FILES
     "include/CoolingSchedules.hpp"
 )
 
-# If using Emscripten, build an executable instead of a shared library
+# Build shared library for non-Emscripten builds
 if (EMSCRIPTEN)
     set(BUILD_TESTS OFF)
     add_executable(genpattern ${SOURCE_FILES} ${HEADER_FILES})
@@ -56,12 +56,17 @@ endif()
 set_property(TARGET genpattern PROPERTY CXX_STANDARD 23)
 target_include_directories(genpattern PRIVATE "include")
 
-# If building tests, set up the test executable
+# If building tests, set up the test executable.
 if (BUILD_TESTS)
+    # Find GoogleTest (adjust according to your installation)
+    find_package(GTest REQUIRED)
+    include_directories(${GTEST_INCLUDE_DIRS})
+    
     add_executable(genpattern_test
         ${SOURCE_FILES}
         "tests/test.cpp"
     )
     set_property(TARGET genpattern_test PROPERTY CXX_STANDARD 23)
     target_include_directories(genpattern_test PRIVATE "include")
+    target_link_libraries(genpattern_test PRIVATE genpattern GTest::GTest GTest::Main)
 endif()

@@ -6,3 +6,4 @@ build/*
 embuild/*
 python/__pycache__/*
 python/test.png
+.mypy_cache/*

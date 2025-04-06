@@ -2,14 +2,11 @@
 from PIL import Image
 import random
 import os
-import sys
 from typing import List, Tuple
 
-# Change working directory to the script's location.
-os.chdir(os.path.dirname(sys.argv[0]))
+from genpattern_lib import GPImgAlpha, gp_genpattern, GPExponentialSchedule, GPLinearSchedule, SCRIPT_PATH
 
-# Import the ctypes-based binding.
-from genpattern_lib import GPImgAlpha, gp_genpattern, GPExponentialSchedule, GPLinearSchedule
+os.chdir(SCRIPT_PATH)
 
 def load_and_modify_image(
     filepath: str,
@@ -55,7 +52,7 @@ def load_and_modify_image(
     return results
 
 def main() -> None:
-    SEED: int = 42
+    SEED: int = 42c
     random.seed(SEED)
 
     # List of image file paths.

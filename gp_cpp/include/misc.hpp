@@ -14,7 +14,7 @@ private:
   T x, y;
 
 public:
-  inline TPoint(const T x, const T y) : x(x), y(y){};
+  inline TPoint(const T x, const T y) : x(x), y(y) {};
 
   inline bool operator==(const TPoint &other) const {
     return this->getX() == other.getX() && this->getY() == other.getY();

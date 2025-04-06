@@ -1,1 +1,0 @@
-../gp_cpp/include/genpattern.h

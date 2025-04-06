@@ -21,13 +21,11 @@ libc.free.argtypes = [ctypes.c_void_p]
 
 # Define C types corresponding to genpattern.h structures.
 class C_GPPoint(ctypes.Structure):
-    # for some reason there is no standard ptrdiff_t in ctypes :/
     _fields_ = [
         ("x", ctypes.c_ssize_t),
         ("y", ctypes.c_ssize_t)
     ]
 
-# GPVector is identical to GPPoint.
 C_GPVector = C_GPPoint
 
 class C_GPImgAlpha(ctypes.Structure):
@@ -67,7 +65,7 @@ class C_GPSchedule(ctypes.Structure):
         ("params", C_ScheduleParams)
     ]
 
-# Set function prototype for gp_genpattern.
+# Updated function prototype for gp_genpattern (new exception API).
 lib.gp_genpattern.argtypes = [
     ctypes.POINTER(C_GPCollection),
     ctypes.c_size_t,  # n_collections
@@ -77,9 +75,11 @@ lib.gp_genpattern.argtypes = [
     ctypes.c_size_t,  # offset_radius
     ctypes.c_size_t,  # collection_offset_radius
     ctypes.POINTER(C_GPSchedule),
-    ctypes.c_uint32   # seed
+    ctypes.c_uint32,  # seed
+    ctypes.c_char_p,  # exception_text_buffer
+    ctypes.c_size_t   # exception_text_buffer_size
 ]
-lib.gp_genpattern.restype = ctypes.c_char_p
+lib.gp_genpattern.restype = ctypes.c_int  # Returns 0 on success, non-zero on error.
 
 # Python-level classes.
 class GPError(Exception):
@@ -142,14 +142,11 @@ def gp_genpattern(
     seed: int
 ) -> list[list[list[tuple[int, int]]]]:
     n_collections = len(collections)
-    # Allocate memory for collections array.
     c_coll_ptr = libc.calloc(n_collections, ctypes.sizeof(C_GPCollection))
     if not c_coll_ptr:
         raise MemoryError("Failed to allocate memory for collections.")
     c_collections = ctypes.cast(c_coll_ptr, ctypes.POINTER(C_GPCollection))
-
     try:
-        # Populate each collection.
         for i, coll in enumerate(collections):
             num_images = len(coll)
             c_collections[i].n_images = num_images
@@ -165,14 +162,11 @@ def gp_genpattern(
                 data_ptr = libc.calloc(data_len, 1)
                 if not data_ptr:
                     raise MemoryError("Failed to allocate memory for image data.")
-                # Copy image data.
                 src = (ctypes.c_uint8 * data_len).from_buffer_copy(img.data)
                 libc.memcpy(data_ptr, ctypes.cast(src, ctypes.c_void_p), data_len)
                 c_img.data = ctypes.cast(data_ptr, ctypes.POINTER(ctypes.c_uint8))
-                # offsets and offsets_size will be filled by gp_genpattern.
                 c_img.offsets_size = 0
 
-        # Allocate and populate schedule.
         schedule_ptr = libc.calloc(1, ctypes.sizeof(C_GPSchedule))
         if not schedule_ptr:
             raise MemoryError("Failed to allocate memory for schedule.")
@@ -186,8 +180,10 @@ def gp_genpattern(
         else:
             raise GPError("Unsupported cooling schedule.")
 
-        # Call the C function.
-        err_ptr = lib.gp_genpattern(
+        # Create exception buffer.
+        exception_buffer_size = 256
+        exception_buffer = ctypes.create_string_buffer(exception_buffer_size)
+        ret = lib.gp_genpattern(
             c_collections,
             n_collections,
             canvas_width,
@@ -196,19 +192,17 @@ def gp_genpattern(
             ctypes.c_size_t(offset_radius),
             ctypes.c_size_t(collection_offset_radius),
             c_schedule,
-            ctypes.c_uint32(seed)
+            ctypes.c_uint32(seed),
+            exception_buffer,
+            ctypes.c_size_t(exception_buffer_size)
         )
-        # Free schedule memory.
         libc.free(schedule_ptr)
 
-        if err_ptr:
-            err_msg = ctypes.string_at(err_ptr).decode("utf-8")
-            libc.free(err_ptr)
+        if ret != 0:
+            err_msg = exception_buffer.value.decode("utf-8")
             raise GPError(err_msg)
 
-        # Extract results.
         results = _extract_offsets(c_coll_ptr, n_collections)
     finally:
         _free_collections(c_coll_ptr, n_collections)
-
     return results

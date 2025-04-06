@@ -23,11 +23,9 @@ protected:
   inline void setPixel(const size_t i, const size_t j, const bool value) {
     const size_t index = i * this->getWidth() + j;
     const size_t vector_index =
-        index /
-        bits_per_block; // Calculate which element contains the bit
+        index / bits_per_block; // Calculate which element contains the bit
     const size_t bit_index =
-        index %
-        bits_per_block; // Find the bit position within that element
+        index % bits_per_block; // Find the bit position within that element
     if (value) {
       data[vector_index] |= (static_cast<Block>(1) << bit_index); // Set the bit
     } else {

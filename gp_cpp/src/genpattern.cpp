@@ -8,12 +8,13 @@
 
 extern "C" {
 
-GP_API const char *gp_genpattern(GPCollection *collections, const size_t n_collections,
-                          const size_t canvas_width, const size_t canvas_height,
-                          const uint8_t threshold, const size_t offset_radius,
-                          const size_t collection_offset_radius,
-                          const GPSchedule *const schedule,
-                          const uint32_t seed) {
+GP_API int gp_genpattern(GPCollection *collections, const size_t n_collections,
+                         const size_t canvas_width, const size_t canvas_height,
+                         const uint8_t threshold, const size_t offset_radius,
+                         const size_t collection_offset_radius,
+                         const GPSchedule *const schedule, const uint32_t seed,
+                         char *exception_text_buffer,
+                         const size_t exception_text_buffer_size) {
   using namespace gp;
 
   std::vector<std::vector<ImgAlphaFilledContour>> collections_v(n_collections);
@@ -24,7 +25,6 @@ GP_API const char *gp_genpattern(GPCollection *collections, const size_t n_colle
     for (size_t img_idx = 0; img_idx < collections[i].n_images; img_idx++) {
       const auto &img = collections[i].images[img_idx];
       collection.emplace_back(img.data, img.width, img.height, threshold);
-      // std::cout << collection.back().getContour().size() << std::endl;
     }
   }
 
@@ -42,19 +42,19 @@ GP_API const char *gp_genpattern(GPCollection *collections, const size_t n_colle
       result = pg.generate(seed, LinearSchedule(schedule->params.linear.k));
       break;
     default:
-      throw std::runtime_error("Unknown schedule type");
+      throw std::invalid_argument("Unknown schedule type");
     }
   } catch (std::exception &e) {
     const char *what = e.what();
-    const size_t buf_size = std::strlen(what) + 1;
-    char *buf = static_cast<char *>(std::calloc(buf_size, sizeof(char)));
-    if (buf == nullptr) {
-      std::cerr << "Failed to allocate memory for exception message"
-                << std::endl;
-      std::abort();
+    if (exception_text_buffer == nullptr || exception_text_buffer_size == 0) {
+      std::cerr << "[libgenpattern] Exception: " << what << std::endl;
+      return -1;
     }
-    std::memcpy(buf, what, buf_size);
-    return buf;
+    const size_t size =
+        std::min(exception_text_buffer_size - 1, std::strlen(what));
+    std::memcpy(exception_text_buffer, what, size);
+    exception_text_buffer[size] = '\0';
+    return -1;
   }
 
   for (size_t col_idx = 0; col_idx < n_collections; col_idx++) {
@@ -68,7 +68,7 @@ GP_API const char *gp_genpattern(GPCollection *collections, const size_t n_colle
       }
     }
   }
-  return nullptr;
+  return 0;
 }
 }
 
@@ -76,11 +76,11 @@ GP_API const char *gp_genpattern(GPCollection *collections, const size_t n_colle
 
 using namespace gp;
 
-std::shared_ptr<ImgAlphaFilledContour> init_ImgAlphaFilledContour(
-    std::vector<uint8_t> &data, const size_t width, const size_t height,
-    const uint8_t threshold) {
+std::shared_ptr<ImgAlphaFilledContour>
+init_ImgAlphaFilledContour(std::vector<uint8_t> &data, const size_t width,
+                           const size_t height, const uint8_t threshold) {
   return std::make_shared<ImgAlphaFilledContour>(data.data(), width, height,
-                                                     threshold);
+                                                 threshold);
 }
 
 std::vector<std::vector<ImgAlphaFilledContour>> convertToImgAlphaVec(
@@ -127,7 +127,8 @@ EMSCRIPTEN_BINDINGS(genpattern) {
   register_vector<uint8_t>("Uint8Vector");
 
   class_<ImgAlphaFilledContour>("ImgAlphaFilledContour")
-      .smart_ptr_constructor("ImgAlphaFilledContour", &init_ImgAlphaFilledContour);
+      .smart_ptr_constructor("ImgAlphaFilledContour",
+                             &init_ImgAlphaFilledContour);
 
   register_vector<std::shared_ptr<ImgAlphaFilledContour>>("Collection");
 
@@ -135,9 +136,9 @@ EMSCRIPTEN_BINDINGS(genpattern) {
       "CollectionVector");
 
   class_<Point>("Point")
-    .constructor<const ptrdiff_t, const ptrdiff_t>()
-    .property("x", &Point::getX)
-    .property("y", &Point::getY);
+      .constructor<const ptrdiff_t, const ptrdiff_t>()
+      .property("x", &Point::getX)
+      .property("y", &Point::getY);
 
   register_vector<Point>("PointVector");
 
@@ -146,14 +147,15 @@ EMSCRIPTEN_BINDINGS(genpattern) {
   register_vector<std::vector<std::vector<Point>>>("PointVectorVectorVector");
 
   value_object<ExponentialSchedule>("schedule_exponential")
-    .field("alpha", &ExponentialSchedule::alpha);
+      .field("alpha", &ExponentialSchedule::alpha);
 
   value_object<LinearSchedule>("schedule_linear")
-    .field("k", &LinearSchedule::k);
+      .field("k", &LinearSchedule::k);
 
   class_<PatternGenerator>("PatternGenerator")
       .smart_ptr_constructor("PatternGenerator", &init_PatternGenerator)
-      .function("generate_exponential", &PatternGenerator::generate<ExponentialSchedule>)
+      .function("generate_exponential",
+                &PatternGenerator::generate<ExponentialSchedule>)
       .function("generate_linear", &PatternGenerator::generate<LinearSchedule>);
 }
 

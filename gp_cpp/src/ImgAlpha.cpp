@@ -9,7 +9,7 @@ ImgAlpha::ImgAlpha(const uint8_t *data, const size_t width, const size_t height)
   if (data != nullptr) {
     std::memcpy(this->alpha.data_handle(), data, this->alpha.size());
   } else {
-      throw std::invalid_argument("ImgAlpha: data pointer is null");
+    throw std::invalid_argument("ImgAlpha: data pointer is null");
   }
 }
 

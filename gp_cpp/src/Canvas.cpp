@@ -7,68 +7,67 @@
 
 namespace gp {
 std::vector<PlacementArea> Canvas::placementAreas(const BitImage &img,
-                                                  const Point pos) const {
-  if (img.getHeight() > this->getHeight() ||
-      img.getWidth() > this->getWidth()) {
-    throw std::invalid_argument("An image is larger than the canvas");
-  }
+                                                  const Point pos) const noexcept {
+    assert(img.getHeight() > this->getHeight() && img.getWidth() > this->getWidth());
+    assert(pos.getX() >= 0 && pos.getX() < this->getWidth());
+    assert(pos.getY() >= 0 && pos.getY() < this->getHeight());
 
-  std::vector<PlacementArea> out;
-  out.reserve(4);
+	std::vector<PlacementArea> out;
+    out.reserve(4);
 
-  const auto imgWidth = static_cast<ptrdiff_t>(img.getWidth());
-  const auto imgHeight = static_cast<ptrdiff_t>(img.getHeight());
-  Box bounds = {pos, {pos.getX() + imgWidth - 1, pos.getY() + imgHeight - 1}};
-  // std::cout << bounds << std::endl;
+    const auto imgWidth = static_cast<ptrdiff_t>(img.getWidth());
+    const auto imgHeight = static_cast<ptrdiff_t>(img.getHeight());
+    const Box bounds = {pos, {pos.getX() + imgWidth - 1, pos.getY() + imgHeight - 1}};
 
-  for (int i = BOTTOM; i != AREAS_SIZE; i++) {
-    Box intersection = bounds.intersect(this->areas[i]);
-    if (intersection.isValid()) {
-      // std::cout << this->areas[i] << " " << intersection << std::endl;
-      out.emplace_back(
-          intersection.translate(this->offsets[i]),
-          intersection.getMin().translate(this->offsets[i]),
-          Point{intersection.getMin().getX() - bounds.getMin().getX(),
-                intersection.getMin().getY() - bounds.getMin().getY()});
-      // std::cout << out.back().imageStart << std::endl;
-      assert(out.size() <= 4);
-    }
-  }
-
-  return out;
+    for (int i = BOTTOM; i != AREAS_SIZE; i++) {
+        const Box intersection = bounds.intersect(this->areas[i]);
+        if (intersection.isValid()) {
+            out.emplace_back(
+            intersection.translate(this->offsets[i]),
+            intersection.getMin().translate(this->offsets[i]),
+            Point{intersection.getMin().getX() - bounds.getMin().getX(),
+            intersection.getMin().getY() - bounds.getMin().getY()});
+        assert(out.size() <= 4);
+        }
+	}
+    return out;
 }
 
-Canvas::Canvas(const ptrdiff_t width, const ptrdiff_t height, std::mt19937 &rng)
-    : BitImage(ImgAlpha(nullptr, width, height)),
-      areas{{{{0, height}, {width - 1, nlp::max()}},
-             {{width, 0}, {nlp::max(), height - 1}},
-             {{width, height}, {nlp::max(), nlp::max()}},
-             {{0, 0}, {width - 1, height - 1}}}},
-      offsets{{{0, -height}, {-width, 0}, {-width, -height}, {0, 0}}},
-      deltaMaxInitial{std::ceil(static_cast<double>(width) / 2.0),
-                      std::ceil(static_cast<double>(height) / 2.0)},
-      rng{rng} {}
+Canvas::Canvas(const ptrdiff_t width, const ptrdiff_t height, std::mt19937& rng)
+    : BitImage(height, width), // use the BitImage(height,width) constructor for an empty canvas
+    areas{ {{{0, height}, {width - 1, nlp::max()}},
+           {{width, 0}, {nlp::max(), height - 1}},
+           {{width, height}, {nlp::max(), nlp::max()}},
+           {{0, 0}, {width - 1, height - 1}}} },
+    offsets{ {{0, -height}, {-width, 0}, {-width, -height}, {0, 0}} },
+    deltaMaxInitial{ std::ceil(static_cast<double>(width) / 2.0),
+                    std::ceil(static_cast<double>(height) / 2.0) },
+    rng{ rng } {
+    if (width <= 0 || height <= 0) {
+        throw std::invalid_argument("Canvas: width and height must be positive");
+    }
+}
 
 Canvas::Canvas(Canvas &&other)
     : BitImage(static_cast<BitImage &&>(other)), areas(std::move(other.areas)),
       offsets(std::move(other.offsets)),
       deltaMaxInitial(std::move(other.deltaMaxInitial)), rng(other.rng) {}
 
-// intersectionArea and addImage optimized by OpenAI o1-preview. TODO: refactor
-uint64_t Canvas::intersectionArea(const BitImage &img, const Point &pos) const {
+// optimized by OpenAI o1-preview
+uint64_t Canvas::intersectionArea(const BitImage &img, const Point &pos) const noexcept {
     uint64_t res = 0;
     const auto areas = this->placementAreas(img, pos);
 
     // Access the underlying data blocks of the canvas and the image
-    const std::vector<Block> &canvas_data = this->getData();
-    const std::vector<Block> &image_data = img.getData();
+    const std::vector<Block>& canvas_data = this->getData();
+    const std::vector<Block>& image_data = img.getData();
 
     // Get the widths of the canvas and image in bits
     const size_t canvas_row_width = this->getWidth();
     const size_t image_row_width = img.getWidth();
 
     // Iterate over each placement area where the image overlaps the canvas
-    for (const auto &pa : areas) {
+    for (const auto& pa : areas) {
         const ptrdiff_t image_start_y = pa.imageStart.getY();
         const ptrdiff_t canvas_start_y = pa.canvasStart.getY();
         const size_t height = pa.bounds.getHeight();
@@ -118,7 +117,8 @@ uint64_t Canvas::intersectionArea(const BitImage &img, const Point &pos) const {
                 Block mask;
                 if (chunk_size < bits_per_block) {
                     mask = (Block(1) << chunk_size) - 1;
-                } else {
+                }
+                else {
                     mask = ~Block(0); // All bits set to 1
                 }
 
@@ -153,7 +153,8 @@ uint64_t Canvas::intersectionArea(const BitImage &img, const Point &pos) const {
     return res;
 }
 
-void Canvas::addImage(const BitImage &img, const Point &pos) {
+// optimized by OpenAI o1-preview
+void Canvas::addImage(const BitImage &img, const Point &pos) noexcept {
     const auto areas = this->placementAreas(img, pos);
 
     // Access the underlying data blocks of the canvas and the image
@@ -248,14 +249,14 @@ void Canvas::addImage(const BitImage &img, const Point &pos) {
                     image_bit_in_block = 0;
                     ++image_block_index;
                 }
-            }
+			}
         }
     }
 }
 
-Point Canvas::wrapPosition(const ptrdiff_t x, const ptrdiff_t y) const {
-  return Point{((x % this->getWidth()) + this->getWidth()) % this->getWidth(),
-               ((y % this->getHeight()) + this->getHeight()) %
+Point Canvas::wrapPosition(const ptrdiff_t x, const ptrdiff_t y) const noexcept {
+    return Point{((x % this->getWidth()) + this->getWidth()) % this->getWidth(),
+                 ((y % this->getHeight()) + this->getHeight()) %
                    this->getHeight()};
 };
 } // namespace gp

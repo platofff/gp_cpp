@@ -8,6 +8,8 @@ ImgAlpha::ImgAlpha(const uint8_t *data, const size_t width, const size_t height)
     : alpha(make_aligned_mdarray<uint8_t>(height, width)) {
   if (data != nullptr) {
     std::memcpy(this->alpha.data_handle(), data, this->alpha.size());
+  } else {
+      throw std::invalid_argument("ImgAlpha: data pointer is null");
   }
 }
 

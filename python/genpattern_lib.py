@@ -1,14 +1,14 @@
 import ctypes
 import ctypes.util
 import os
-from typing import List, Tuple, Union
 
 # Load shared libraries.
+SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
 if os.name == "nt":
-    lib = ctypes.CDLL("genpattern.dll")
-    libc = ctypes.CDLL(ctypes.util.find_library("msvcrt"))
+    lib = ctypes.CDLL(os.path.join(SCRIPT_PATH, "bin", "genpattern.dll"))
+    libc = ctypes.CDLL(ctypes.util.find_msvcrt())
 else:
-    lib = ctypes.CDLL("./libgenpattern.so")
+    lib = ctypes.CDLL(os.path.join(SCRIPT_PATH, "bin", "libgenpattern.so"))
     libc = ctypes.CDLL(ctypes.util.find_library("c"))
 
 # Set libc function prototypes.
@@ -100,15 +100,15 @@ class GPLinearSchedule:
         self.k: float = k
 
 # Internal helper functions.
-def _extract_offsets(c_coll_ptr: ctypes.c_void_p, n: int) -> List[List[List[Tuple[int, int]]]]:
-    results: List[List[List[Tuple[int, int]]]] = []
+def _extract_offsets(c_coll_ptr: ctypes.c_void_p, n: int) -> list[list[list[tuple[int, int]]]]:
+    results: list[list[list[tuple[int, int]]]] = []
     collections = ctypes.cast(c_coll_ptr, ctypes.POINTER(C_GPCollection))
     for i in range(n):
-        coll_results: List[List[Tuple[int, int]]] = []
+        coll_results: list[list[tuple[int, int]]] = []
         coll = collections[i]
         for j in range(coll.n_images):
             img = coll.images[j]
-            offsets: List[Tuple[int, int]] = []
+            offsets: list[tuple[int, int]] = []
             for k in range(img.offsets_size):
                 pt = img.offsets[k]
                 offsets.append((pt.x, pt.y))
@@ -132,18 +132,17 @@ def _free_collections(c_coll_ptr: ctypes.c_void_p, n: int) -> None:
 
 # Main binding function.
 def gp_genpattern(
-    collections: List[List[GPImgAlpha]],
+    collections: list[list[GPImgAlpha]],
     canvas_width: int,
     canvas_height: int,
     threshold: int,
     offset_radius: int,
     collection_offset_radius: int,
-    schedule: Union[GPExponentialSchedule, GPLinearSchedule],
+    schedule: GPExponentialSchedule | GPLinearSchedule,
     seed: int
-) -> List[List[List[Tuple[int, int]]]]:
+) -> list[list[list[tuple[int, int]]]]:
     n_collections = len(collections)
     # Allocate memory for collections array.
-    coll_array_size = n_collections * ctypes.sizeof(C_GPCollection)
     c_coll_ptr = libc.calloc(n_collections, ctypes.sizeof(C_GPCollection))
     if not c_coll_ptr:
         raise MemoryError("Failed to allocate memory for collections.")
@@ -154,7 +153,6 @@ def gp_genpattern(
         for i, coll in enumerate(collections):
             num_images = len(coll)
             c_collections[i].n_images = num_images
-            img_array_size = num_images * ctypes.sizeof(C_GPImgAlpha)
             images_ptr = libc.calloc(num_images, ctypes.sizeof(C_GPImgAlpha))
             if not images_ptr:
                 raise MemoryError("Failed to allocate memory for images.")
@@ -169,7 +167,7 @@ def gp_genpattern(
                     raise MemoryError("Failed to allocate memory for image data.")
                 # Copy image data.
                 src = (ctypes.c_uint8 * data_len).from_buffer_copy(img.data)
-                libc.memcpy(data_ptr, ctypes.byref(src), data_len)
+                libc.memcpy(data_ptr, ctypes.cast(src, ctypes.c_void_p), data_len)
                 c_img.data = ctypes.cast(data_ptr, ctypes.POINTER(ctypes.c_uint8))
                 # offsets and offsets_size will be filled by gp_genpattern.
                 c_img.offsets_size = 0

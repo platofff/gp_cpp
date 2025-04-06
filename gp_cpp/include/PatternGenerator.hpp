@@ -24,7 +24,7 @@ private:
 
   inline std::vector<Point>
   getPlacementPoints(const Point &p, const ptrdiff_t img_width,
-                     const ptrdiff_t img_height) const {
+                     const ptrdiff_t img_height) const noexcept {
     const std::array<Point, 4> points = {
         {p,
          {p.getX() - this->width, p.getY()},

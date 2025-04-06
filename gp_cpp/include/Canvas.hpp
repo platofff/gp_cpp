@@ -29,12 +29,12 @@ private:
   std::mt19937 &rng;
 
   std::vector<PlacementArea> placementAreas(const BitImage &img,
-                                            const Point pos) const;
+                                            const Point pos) const noexcept;
 
   using nlp = std::numeric_limits<ptrdiff_t>;
 
-  Point wrapPosition(const ptrdiff_t x, const ptrdiff_t y) const;
-  uint64_t intersectionArea(const BitImage &img, const Point &pos) const;
+  Point wrapPosition(const ptrdiff_t x, const ptrdiff_t y) const noexcept;
+  uint64_t intersectionArea(const BitImage &img, const Point &pos) const noexcept;
 
 public:
   Canvas(const ptrdiff_t width, const ptrdiff_t height, std::mt19937 &rng);
@@ -47,7 +47,7 @@ public:
   std::optional<Point> optimizePlacement(const BitImage &img,
                                          const double tInitial,
                                          CoolingSchedule decreaseT,
-                                         const double eps = 0.0001) const {
+                                         const double eps = 0.0001) const noexcept {
     std::uniform_real_distribution<double> probDist(0.0, 1.0);
 
     double t = tInitial;
@@ -94,7 +94,7 @@ public:
     return std::nullopt;
   }
 
-  void addImage(const BitImage &img, const Point &pos);
+  void addImage(const BitImage &img, const Point &pos) noexcept;
 };
 
 } // namespace gp

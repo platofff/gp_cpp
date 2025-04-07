@@ -6,7 +6,7 @@
 #ifdef _WIN32
 #define GP_API __declspec(dllexport)
 #else
-#define GP_API
+#define GP_API __attribute__((visibility("default")))
 #endif
 
 extern "C" {

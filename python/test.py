@@ -52,7 +52,7 @@ def load_and_modify_image(
     return results
 
 def main() -> None:
-    SEED: int = 42c
+    SEED: int = 42
     random.seed(SEED)
 
     # List of image file paths.

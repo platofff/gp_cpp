@@ -1,4 +1,7 @@
-﻿option(BUILD_TESTS "Build the test executable" OFF)
+﻿cmake_minimum_required(VERSION 3.22)
+project(genpattern)
+
+option(BUILD_TESTS "Build the test executables" OFF)
 
 if ("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" MATCHES "MSVC")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /clang:-Wall /clang:-Wextra /clang:-Wno-sign-compare")
@@ -42,7 +45,6 @@ set(HEADER_FILES
     "include/CoolingSchedules.hpp"
 )
 
-# Build shared library for non-Emscripten builds
 if (EMSCRIPTEN)
     set(BUILD_TESTS OFF)
     add_executable(genpattern ${SOURCE_FILES} ${HEADER_FILES})
@@ -51,21 +53,32 @@ else()
     add_library(genpattern SHARED ${SOURCE_FILES} ${HEADER_FILES})
 endif()
 
-# Set C++ standard to C++23
 set_property(TARGET genpattern PROPERTY CXX_STANDARD 23)
 target_include_directories(genpattern PRIVATE "include")
 
-# If building tests, set up the test executable.
 if (BUILD_TESTS)
-    # Find GoogleTest (adjust according to your installation)
+    # Find GoogleTest.
     find_package(GTest REQUIRED)
     include_directories(${GTEST_INCLUDE_DIRS})
-    
+
+    # Create the standard test executable linked with the genpattern library.
     add_executable(genpattern_test
         ${SOURCE_FILES}
         "tests/test.cpp"
     )
     set_property(TARGET genpattern_test PROPERTY CXX_STANDARD 23)
     target_include_directories(genpattern_test PRIVATE "include")
-    target_link_libraries(genpattern_test PRIVATE genpattern GTest::GTest GTest::Main)
+    target_link_libraries(genpattern_test PRIVATE GTest::GTest GTest::Main)
+    
+    # Register the test with CTest.
+    add_test(NAME genpattern_test COMMAND genpattern_test)
+
+    # Create a test executable that uses the C API via dlopen() without static linking.
+    add_executable(genpattern_test_lib "tests/test_lib.cpp")
+    set_property(TARGET genpattern_test_lib PROPERTY CXX_STANDARD 23)
+    target_include_directories(genpattern_test_lib PRIVATE "include")
+    target_link_libraries(genpattern_test_lib PRIVATE ${CMAKE_DL_LIBS} GTest::GTest GTest::Main)
+    
+    # Register the second test.
+    add_test(NAME genpattern_test_lib COMMAND genpattern_test_lib)
 endif()

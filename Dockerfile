@@ -20,7 +20,10 @@ RUN apk update && apk add --no-cache \
     cmake \
     make \
     tar \
-    wget
+    wget \
+    libc++-dev \
+    lld \
+    llvm-libunwind-dev
 
 # Create abuild user
 RUN adduser -D builder \
@@ -31,8 +34,10 @@ RUN adduser -D builder \
 
 WORKDIR /home/builder
 
-# Download only the llvm-runtimes directory from aports for the specified Alpine version
+# Download only the llvm-runtimes and gtest directory from aports for the specified Alpine version
 RUN wget -O- "https://gitlab.alpinelinux.org/alpine/aports/-/archive/${ALPINE_VERSION}-stable/aports-${ALPINE_VERSION}-stable.tar.gz?path=main/llvm-runtimes" \
+    | tar -xvzf - && \
+    wget -O- "https://gitlab.alpinelinux.org/alpine/aports/-/archive/${ALPINE_VERSION}-stable/aports-${ALPINE_VERSION}-stable.tar.gz?path=main/gtest" \
     | tar -xvzf -
 
 # Permit 'builder' user to write everything
@@ -45,6 +50,14 @@ WORKDIR /home/builder/aports-$ALPINE_VERSION-stable-main-llvm-runtimes/main/llvm
 # Add -fPIC to CFLAGS and CXXFLAGS in APKBUILD
 RUN sed -i '/^options=/a CFLAGS="-fPIC"' APKBUILD && \
     sed -i '/^options=/a CXXFLAGS="-fPIC"' APKBUILD
+
+# Build the packages
+RUN abuild checksum && abuild -r
+
+WORKDIR /home/builder/aports-$ALPINE_VERSION-stable-main-gtest/main/gtest
+
+# Add -stdlib=libc++ to CXXFLAGS in APKBUILD
+RUN sed -i '/^builddir=/a CXXFLAGS="-stdlib=libc++"\nLDFLAGS="-fuse-ld=lld"\nCXX=clang++\nCC=clang' APKBUILD
 
 # Build the packages
 RUN abuild checksum && abuild -r

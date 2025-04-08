@@ -10,6 +10,10 @@ cmake .. \
     -DCMAKE_CXX_COMPILER=clang++ \
     -DCMAKE_C_FLAGS="-target ${TARGETARCH}-alpine-linux-musl -B/usr/lib/gcc/${TARGETARCH}-alpine-linux-musl/${GCC_VERSION} -fPIC" \
     -DCMAKE_CXX_FLAGS="-stdlib=libc++ -target ${TARGETARCH}-alpine-linux-musl -B/usr/lib/gcc/${TARGETARCH}-alpine-linux-musl/${GCC_VERSION} -fPIC" \
+    -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=lld -Wl,--no-undefined" \
     -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld -L/usr/lib/gcc/${TARGETARCH}-alpine-linux-musl/${GCC_VERSION} -static -Wl,--no-undefined -Wl,/usr/lib/libc++.a -Wl,/usr/lib/libc++abi.a -Wl,--no-whole-archive" \
     -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTS=ON
 make -j
+
+ctest . --rerun-failed --output-on-failure

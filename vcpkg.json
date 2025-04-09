@@ -1,0 +1,9 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "genpattern",
+  "version": "0.0.1",
+  "dependencies": [
+    "gtest"
+  ],
+  "builtin-baseline": "2ad004460f5db4d3b66f62f5799ff66c265c4b5d"
+}

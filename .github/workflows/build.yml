@@ -1,4 +1,4 @@
-name: Build and test genpattern
+name: Build genpattern
 
 on:
   push:
@@ -46,8 +46,27 @@ jobs:
         run: ctest --test-dir build -C Release
         timeout-minutes: 15
 
-      - name: Upload artifact
+      - name: Copy DLL for Windows
+        run: |
+            if (!(Test-Path artifact)) { New-Item -ItemType directory -Path artifact }; `
+            cp build/gp_cpp/Release/genpattern.dll artifact/
+      
+      - name: Cache Docker images
+        uses: ScribeMD/docker-cache@0.5.0
+        with:
+          key: docker-${{ runner.os }}-${{ hashFiles(Dockerfile, docker/**) }}
+
+      - name: Build Docker builder image
+        run: docker build . -t gp_cpp_builder
+
+      - name: Build and test CMake project in Docker
+        run: docker run --rm -v "$($PWD.Path):/app" gp_cpp_builder
+        
+      - name: Copy SO for Linux
+        run: cp build/gp_cpp/libgenpattern.so artifact/
+      
+      - name: Upload build artifact (x86_64)
         uses: actions/upload-artifact@v4
         with:
-          name: genpattern_x64
-          path: build/gp_cpp/Release/genpattern.dll
+          name: genpattern_build_x86_64
+          path: artifact/

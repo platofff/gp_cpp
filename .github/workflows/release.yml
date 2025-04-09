@@ -1,0 +1,32 @@
+name: Release genpattern
+
+on:
+  workflow_run:
+    workflows: ["Build genpattern"]
+    types: [completed]
+
+jobs:
+  release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: genpattern_build_x86_64
+
+      - name: Create Windows ZIP
+        run: zip -j genpattern.windows.x64.zip artifact/genpattern.dll
+
+      - name: Create Linux tar.gz
+        run: tar -czvf genpattern.linux.x86_64.tar.gz -C artifact libgenpattern.so
+
+      - name: Create Release with assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ github.ref }}
+          body: "Automatically created release from tag ${{ github.ref }}"
+          files: |
+            genpattern.windows.x64.zip
+            genpattern.linux.x86_64.tar.gz

@@ -2,7 +2,7 @@ name: Release genpattern
 
 on:
   workflow_run:
-    workflows: ["Build genpattern"]
+    workflows: ["Build genpattern - Windows", "Build genpattern - Linux"]
     types: [completed]
 
 jobs:
@@ -10,16 +10,21 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     steps:
-      - name: Download build artifact
+      - name: Download Windows build artifact
         uses: actions/download-artifact@v4
         with:
-          name: genpattern_build_x86_64
+          name: genpattern_windows_x86_64
+
+      - name: Download Linux build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: genpattern_linux_x86_64
 
       - name: Create Windows ZIP
-        run: zip -j genpattern.windows.x64.zip artifact/genpattern.dll
+        run: zip -j genpattern.windows.x64.zip genpattern_windows_x86_64/genpattern.dll
 
       - name: Create Linux tar.gz
-        run: tar -czvf genpattern.linux.x86_64.tar.gz -C artifact libgenpattern.so
+        run: tar -czvf genpattern.linux.x86_64.tar.gz -C genpattern_linux_x86_64 libgenpattern.so
 
       - name: Create Release with assets
         uses: softprops/action-gh-release@v2

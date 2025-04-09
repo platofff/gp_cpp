@@ -1,0 +1,53 @@
+name: Build and test genpattern
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Create build directory
+        run: if (!(Test-Path "build")) { New-Item -ItemType directory -Path build }
+        shell: pwsh
+
+      - name: Cache vcpkg_installed
+        uses: actions/cache@v4
+        with:
+          path: build/vcpkg_installed
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json') }}
+          restore-keys: ${{ runner.os }}-vcpkg-
+
+      - name: Configure CMake project
+        run: |
+          cmake -S . -B build `
+            -DBUILD_TESTS=ON `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_GENERATOR_TOOLSET=ClangCL `
+            -DCMAKE_TOOLCHAIN_FILE="${env:VCPKG_INSTALLATION_ROOT}\scripts\buildsystems\vcpkg.cmake"
+        shell: pwsh
+        timeout-minutes: 30
+
+      - name: Build CMake project
+        run: cmake --build build --config Release
+        timeout-minutes: 30
+
+      - name: Run tests
+        run: ctest --test-dir build -C Release
+        timeout-minutes: 15
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: genpattern_x64
+          path: build/gp_cpp/Release/genpattern.dll

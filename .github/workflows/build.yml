@@ -28,17 +28,36 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      - name: Check for existing artifacts
+        id: check_artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          COMMIT: ${{ github.sha }}
+        shell: bash
+        run: |
+          artifacts=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" "https://api.github.com/repos/${REPO}/actions/artifacts")
+          if echo "$artifacts" | grep -q "genpattern_windows_x86_64_${COMMIT}" && \
+             echo "$artifacts" | grep -q "genpattern_linux_x86_64_${COMMIT}" && \
+             echo "$artifacts" | grep -q "genpattern_linux_arm64_${COMMIT}"; then
+            echo "All artifacts for current commit found. Skipping build."
+            echo "::set-output name=build_required::false"
+          else
+            echo "Not all artifacts found for the current commit. Proceeding with build."
+            echo "::set-output name=build_required::true"
+          fi
+
       - name: Build genpattern on Linux
-        if: matrix.platform != 'windows'
+        if: steps.check_artifact.outputs.build_required == 'true' && matrix.platform != 'windows'
         uses: ./.github/actions/build-genpattern-linux
         with:
-          artifact_name: ${{ matrix.artifact_name }}
+          artifact_name: ${{ matrix.artifact_name }}_${{ github.sha }}
 
       - name: Build genpattern on Windows
-        if: matrix.platform == 'windows'
+        if: steps.check_artifact.outputs.build_required == 'true' && matrix.platform == 'windows'
         uses: ./.github/actions/build-genpattern-windows
         with:
-          artifact_name: ${{ matrix.artifact_name }}
+          artifact_name: ${{ matrix.artifact_name }}_${{ github.sha }}
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
@@ -53,28 +72,31 @@ jobs:
       - name: Download Windows build artifact
         uses: actions/download-artifact@v4
         with:
-          name: genpattern_windows_x86_64
+          name: genpattern_windows_x86_64_${{ github.sha }}
 
       - name: Download Linux x86_64 build artifact
         uses: actions/download-artifact@v4
         with:
-          name: genpattern_linux_x86_64
+          name: genpattern_linux_x86_64_${{ github.sha }}
 
       - name: Download Linux arm64 build artifact
         uses: actions/download-artifact@v4
         with:
-          name: genpattern_linux_arm64
+          name: genpattern_linux_arm64_${{ github.sha }}
+
+      - name: List Windows artifact files
+        run: ls -la genpattern_windows_x86_64_{{ github.sha }}
 
       - name: Create Windows ZIP
-        run: zip -j genpattern.windows.x64.zip genpattern_windows_x86_64/genpattern.dll
+        run: zip -j genpattern.windows.x64.zip genpattern_windows_x86_64_${{ github.sha }}/genpattern.dll
         shell: bash
 
       - name: Create Linux x86_64 tar.gz
-        run: tar -czvf genpattern.linux.x86_64.tar.gz -C genpattern_linux_x86_64 libgenpattern.so
+        run: tar -czvf genpattern.linux.x86_64.tar.gz -C genpattern_linux_x86_64_${{ github.sha }} libgenpattern.so
         shell: bash
 
       - name: Create Linux arm64 tar.gz
-        run: tar -czvf genpattern.linux.arm64.tar.gz -C genpattern_linux_arm64 libgenpattern.so
+        run: tar -czvf genpattern.linux.arm64.tar.gz -C genpattern_linux_arm64_${{ github.sha }} libgenpattern.so
         shell: bash
 
       - name: Create GitHub Release

@@ -25,7 +25,7 @@ jobs:
             artifact_name: genpattern_windows_x86_64
     runs-on: ${{ matrix.runsOn }}
     steps:
-      - name: Checkout code
+      - name: Checkout source code
         uses: actions/checkout@v4
 
       - name: Build genpattern on Linux
@@ -67,12 +67,15 @@ jobs:
 
       - name: Create Windows ZIP
         run: zip -j genpattern.windows.x64.zip genpattern_windows_x86_64/genpattern.dll
+        shell: bash
 
       - name: Create Linux x86_64 tar.gz
         run: tar -czvf genpattern.linux.x86_64.tar.gz -C genpattern_linux_x86_64 libgenpattern.so
+        shell: bash
 
       - name: Create Linux arm64 tar.gz
         run: tar -czvf genpattern.linux.arm64.tar.gz -C genpattern_linux_arm64 libgenpattern.so
+        shell: bash
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

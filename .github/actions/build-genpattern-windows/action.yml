@@ -36,10 +36,12 @@ runs:
 
     - name: Build CMake project
       run: cmake --build build --config Release
+      shell: pwsh
       timeout-minutes: 30
 
     - name: Run tests
       run: ctest --test-dir build -C Release
+      shell: pwsh
       timeout-minutes: 15
 
     - name: Copy DLL for Windows

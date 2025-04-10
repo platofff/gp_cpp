@@ -11,6 +11,7 @@ runs:
       run: |
         mkdir -p build
         mkdir -p artifact
+      shell: bash
 
     - name: Cache Docker images
       uses: ScribeMD/docker-cache@0.5.0
@@ -24,12 +25,15 @@ runs:
         else
           docker build . -t gp_cpp_builder
         fi
+      shell: bash
 
     - name: Build and test CMake project in Docker
       run: docker run --rm -v "$(pwd):/app" gp_cpp_builder
+      shell: bash
 
     - name: Copy SO for Linux
       run: cp build/gp_cpp/libgenpattern.so artifact/
+      shell: bash
 
     - name: Upload Linux build artifact
       uses: actions/upload-artifact@v4

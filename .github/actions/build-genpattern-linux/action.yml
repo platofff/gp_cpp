@@ -1,0 +1,38 @@
+name: "Build genpattern"
+description: "Composite action to build and test the genpattern project in Docker."
+inputs:
+  artifact_name:
+    description: "Name for the uploaded build artifact"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Create build and artifact directories
+      run: |
+        mkdir -p build
+        mkdir -p artifact
+
+    - name: Cache Docker images
+      uses: ScribeMD/docker-cache@0.5.0
+      with:
+        key: docker-${{ runner.os }}-${{ hashFiles('Dockerfile', 'docker/**') }}
+
+    - name: Build Docker builder image if not cached
+      run: |
+        if docker image inspect gp_cpp_builder >/dev/null 2>&1; then
+          echo "Docker builder image exists. Skipping build."
+        else
+          docker build . -t gp_cpp_builder
+        fi
+
+    - name: Build and test CMake project in Docker
+      run: docker run --rm -v "$(pwd):/app" gp_cpp_builder
+
+    - name: Copy SO for Linux
+      run: cp build/gp_cpp/libgenpattern.so artifact/
+
+    - name: Upload Linux build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: artifact/

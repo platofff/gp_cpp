@@ -85,7 +85,7 @@ jobs:
           name: genpattern_linux_arm64_${{ github.sha }}
 
       - name: List Windows artifact files
-        run: ls -la genpattern_windows_x86_64_{{ github.sha }}
+        run: ls -la genpattern_windows_x86_64_${{ github.sha }}
 
       - name: Create Windows ZIP
         run: zip -j genpattern.windows.x64.zip genpattern_windows_x86_64_${{ github.sha }}/genpattern.dll
